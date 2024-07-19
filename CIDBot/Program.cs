@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CIDBot;
 
-class Program
+internal sealed class Program
 {
     static readonly ServiceProvider _serviceProvider = CreateServices();
 
@@ -18,7 +18,8 @@ class Program
 
         var collection = new ServiceCollection()
             .AddSingleton(clientConfig)
-            .AddSingleton<DiscordSocketClient>();
+            .AddSingleton<DiscordSocketClient>()
+            .AddSingleton<LoggingService>();
 
         return collection.BuildServiceProvider();
     }
@@ -27,8 +28,12 @@ class Program
     {
         var client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
 
+        // Required for the logging to actually work, but isn't assigned a variable name
+        // as it isn't referred to later in the code.
+        _ = _serviceProvider.GetRequiredService<LoggingService>();
+
         string token = Environment.GetEnvironmentVariable("CIDBot_TOKEN")
-            ?? throw new NotImplementedException("Please define the CIDBot_TOKEN environment variable");
+            ?? throw new NotImplementedException("Please define the CIDBot_TOKEN environment variable.");
 
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
