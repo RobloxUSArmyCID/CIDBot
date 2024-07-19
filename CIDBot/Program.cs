@@ -38,6 +38,9 @@ internal sealed class Program
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
 
+        var onReady = new OnReady(_serviceProvider);
+        client.Ready += onReady.ClientReadyAsync;
+
         await Task.Delay(-1);
     }
 }
