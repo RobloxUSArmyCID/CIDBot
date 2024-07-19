@@ -7,22 +7,23 @@ namespace CIDBot;
 
 class LoggingService
 {
-    private readonly DiscordSocketClient Client;
-
     public LoggingService(DiscordSocketClient client)
     {
-        Client = client;
-        Client.Log += LogAsync;
+        client.Log += LogAsync;
     }
 
     private async Task LogAsync(LogMessage msg)
     {
 
         Log.Logger = new LoggerConfiguration()
+#if DEBUG // Only use the Debug log level if the program is run in a development environment.
+            .MinimumLevel.Debug()
+#else
             .MinimumLevel.Information()
+#endif
             .Enrich.FromLogContext()
             .WriteTo.Console()
-            .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(), "log.json")
+            .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(), $"{DateTime.Now.ToShortTimeString()}-CIDBot-Log.json")
             .CreateLogger();
 
         LogEventLevel severity = msg.Severity switch
