@@ -23,7 +23,7 @@ class LoggingService
 #endif
             .Enrich.FromLogContext()
             .WriteTo.Console()
-            .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(), $"{DateTime.Now.ToShortTimeString()}-CIDBot-Log.json")
+            .WriteTo.File(new Serilog.Formatting.Json.JsonFormatter(), $"{DateTime.Now:yyyy-MM-dd}-CIDBot-Log.json")
             .CreateLogger();
 
         LogEventLevel severity = msg.Severity switch
