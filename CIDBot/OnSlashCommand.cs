@@ -5,7 +5,13 @@ namespace CIDBot
 {
     internal class OnSlashCommand(ServiceProvider serviceProvider)
     {
+
         readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
+        readonly static HttpClient GroupsClient = new()
+        {
+            BaseAddress = new Uri("https://groups.roblox.com/")
+        };
+
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
@@ -15,6 +21,7 @@ namespace CIDBot
         async Task OnBgcheckCommand(SocketSlashCommand cmd)
         {
             await cmd.DeferAsync();
+
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace CIDBot;
 
@@ -16,10 +17,17 @@ internal sealed class Program
             GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
         };
 
+        var jsonSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true,
+        };
+
         var collection = new ServiceCollection()
             .AddSingleton(clientConfig)
             .AddSingleton<DiscordSocketClient>()
-            .AddSingleton<LoggingService>();
+            .AddSingleton<LoggingService>()
+            .AddSingleton(jsonSerializerOptions);
 
         return collection.BuildServiceProvider();
     }
