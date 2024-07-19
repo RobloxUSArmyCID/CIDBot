@@ -2,6 +2,6 @@
 {
     internal class GetUserGroupsResponseModel
     {
-        public IList<GetUserGroupsDataModel>? Data { get; set; }
+        public IList<GetUserGroupsResponseDataModel>? Data { get; set; }
     }
 }

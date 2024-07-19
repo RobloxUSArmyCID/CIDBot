@@ -1,8 +1,8 @@
 ﻿namespace CIDBot.Models
 {
-    internal class Role
+    internal class RoleModel
     {
-        public int Id { get; set; }
+        public ulong Id { get; set; }
         public string? Name { get; set; }
         public int Rank { get; set; }
     }
