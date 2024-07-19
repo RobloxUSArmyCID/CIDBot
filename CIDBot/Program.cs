@@ -41,6 +41,9 @@ internal sealed class Program
         var onReady = new OnReady(_serviceProvider);
         client.Ready += onReady.ClientReadyAsync;
 
+        var onSlashCommand = new OnSlashCommand(_serviceProvider);
+        client.SlashCommandExecuted += onSlashCommand.HandleSlashCommand;
+
         await Task.Delay(-1);
     }
 }
