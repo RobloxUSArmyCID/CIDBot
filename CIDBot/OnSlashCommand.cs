@@ -2,6 +2,8 @@
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using System.Numerics;
+using System.Text;
 using System.Text.Json;
 
 namespace CIDBot
@@ -22,6 +24,10 @@ namespace CIDBot
             BaseAddress = new Uri("https://users.roblox.com")
         };
 
+        readonly static HttpClient BadgesClient = new()
+        {
+            BaseAddress = new Uri("https://badges.roblox.com")
+        };
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
@@ -45,9 +51,7 @@ namespace CIDBot
                 string userInfoByUsernameRequestStr = JsonSerializer.Serialize(userInfoByUsernameRequest, options: JsonOptions);
 
                 var userInfoByUsernameResponseMessage = await UsersClient.PostAsync("/v1/usernames/users", new StringContent(userInfoByUsernameRequestStr));
-
                 userInfoByUsernameResponseMessage.EnsureSuccessStatusCode();
-
                 var userInfoByUsernameResponseStr = await userInfoByUsernameResponseMessage.Content.ReadAsStringAsync();
 
                 var userInfo = JsonSerializer.Deserialize<GetUserInfoByUsernameResponse>
@@ -83,6 +87,10 @@ namespace CIDBot
 
                         var groupInfo = JsonSerializer.Deserialize<GetGroupInfoByIdResponse>(getGroupInfoStr, JsonOptions);
 
+                        // group owners can be null
+                        // wtf roblox
+                        // skips groups without owners to not fuck shit up
+                        if (groupInfo!.Data!.First()!.Owner is null) continue;
                         ulong ownerId = groupInfo!.Data!.First()!.Owner!.Id;
 
                         var getOwnerInfoMsg = await UsersClient.GetAsync($"/v1/users/{ownerId}");
@@ -116,7 +124,70 @@ namespace CIDBot
                     }
                 }
 
+                bool has200OrMoreBadges = false;
+                int badges = 0;
 
+                var first100BadgesMsg = await BadgesClient.GetAsync($"/v1/users/{userId}/badges?limit=100");
+                first100BadgesMsg.EnsureSuccessStatusCode();
+                string first100BadgesStr = await first100BadgesMsg.Content.ReadAsStringAsync();
+
+                var first100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(first100BadgesStr, JsonOptions);
+
+                if (first100Badges!.NextPageCursor is null)
+                {
+                    badges = first100Badges!.Data!.Count;
+                }
+                else
+                {
+                    var next100BadgesMsg = await BadgesClient.GetAsync(
+                        $"/v1/users/{userId}/badges?limit=100&cursor={first100Badges.NextPageCursor}");
+                    next100BadgesMsg.EnsureSuccessStatusCode();
+                    string next100BadgesStr = await next100BadgesMsg.Content.ReadAsStringAsync();
+
+                    var next100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(next100BadgesStr, JsonOptions);
+                    if (next100Badges!.Data!.Count != 100)
+                    {
+                        badges = next100Badges.Data.Count + 100;
+                    }
+                    else
+                    {
+                        badges = 200;
+                        has200OrMoreBadges = true;
+                    }
+                }
+
+                List<string> pastUsernames = [];
+                string? pastUsernamesNextPageCursor = null;
+                while (true)
+                {
+                    HttpResponseMessage? getPastUsernamesMsg = null;
+
+                    if (pastUsernamesNextPageCursor is not null)
+                    {
+                        getPastUsernamesMsg = await UsersClient.GetAsync($"/v1/users/{userId}/username-history?limit=100&cursor={pastUsernamesNextPageCursor}");
+                    }
+                    else
+                    {
+                        getPastUsernamesMsg = await UsersClient.GetAsync($"/v1/users/{userId}/username-history?limit=100");
+                    }
+
+                    getPastUsernamesMsg.EnsureSuccessStatusCode();
+                    string getPastUsernamesStr = await getPastUsernamesMsg.Content.ReadAsStringAsync();
+
+                    var pastUsernamesJson = JsonSerializer.Deserialize<GetPastUsernamesResponse>(getPastUsernamesStr, JsonOptions);
+
+                    foreach (var pastUsername in pastUsernamesJson!.Data!)
+                    {
+                        pastUsernames.Add(pastUsername.Name!);
+                    }
+
+                    if (pastUsernamesJson.NextPageCursor is null) break;
+                    else pastUsernamesNextPageCursor = pastUsernamesJson.NextPageCursor;
+                }
+
+
+
+                await cmd.FollowupAsync();
 
             }
             catch (Exception ex)
@@ -125,7 +196,7 @@ namespace CIDBot
                     .WithAuthor(cmd.User)
                     .WithColor(Color.DarkRed)
                     .WithTitle(":x: | An error occured!")
-                    .WithDescription($"Unhandled exception:\n\n```\n{ex.Message}```")
+                    .WithDescription($"Unhandled exception:\n```\n{ex}```")
                     .WithFooter("If you believe this is an error, contact the Investigatory Director.")
                     .WithCurrentTimestamp()
                     .Build();
