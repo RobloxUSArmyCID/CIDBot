@@ -269,7 +269,7 @@ namespace CIDBot
                 if (groupsUnder30Members.Count > 0)
                 {
                     groupsUnder30Members.ForEach(
-                        group => descriptionBuilder.AppendLine($"- ⚠ Suspicious group: {group.Name} ({group.MemberCount} members) - owned by {group.OwnerUsername} ⚠"));
+                        group => descriptionBuilder.AppendLine($"- ⚠ Suspicious group: {group.Name} ({group.MemberCount} member{(group.MemberCount != 1 ? "s" : "")})}) - owned by {group.OwnerUsername} ⚠"));
                 }
 
                 if (pastUsernames.Count > 0)
