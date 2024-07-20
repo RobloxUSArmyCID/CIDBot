@@ -2,8 +2,6 @@
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualBasic;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace CIDBot
@@ -11,7 +9,7 @@ namespace CIDBot
     internal class OnSlashCommand(ServiceProvider serviceProvider)
     {
 
-        readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
+       // readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
         readonly JsonSerializerOptions JsonOptions = serviceProvider.GetRequiredService<JsonSerializerOptions>();
 
         readonly static HttpClient GroupsClient = new()
@@ -35,7 +33,7 @@ namespace CIDBot
             try
             {
                 await cmd.DeferAsync();
-                GetUserDataByUsernameRequestModel usernameRequest = new()
+                GetUserInfoByUsernameRequest userInfoByUsernameRequest = new()
                 {
                     Usernames = [
                         //Guranteed to be a string as that is what the command requires
@@ -44,21 +42,81 @@ namespace CIDBot
                     ExcludeBannedUsers = true
                 };
 
-                string usernameRequestJson = JsonSerializer.Serialize(usernameRequest, options: JsonOptions);
+                string userInfoByUsernameRequestStr = JsonSerializer.Serialize(userInfoByUsernameRequest, options: JsonOptions);
 
-                var usernameResponseMessage = await UsersClient.PostAsync("/v1/usernames/users", new StringContent(usernameRequestJson));
+                var userInfoByUsernameResponseMessage = await UsersClient.PostAsync("/v1/usernames/users", new StringContent(userInfoByUsernameRequestStr));
 
-                usernameResponseMessage.EnsureSuccessStatusCode();
+                userInfoByUsernameResponseMessage.EnsureSuccessStatusCode();
 
-                var usernameResponseStr = await usernameResponseMessage.Content.ReadAsStringAsync();
+                var userInfoByUsernameResponseStr = await userInfoByUsernameResponseMessage.Content.ReadAsStringAsync();
 
-                var usernameResponse = JsonSerializer.Deserialize<GetUserDataByUsernameResponseModel>
-                    (usernameResponseStr, JsonOptions);
+                var userInfo = JsonSerializer.Deserialize<GetUserInfoByUsernameResponse>
+                    (userInfoByUsernameResponseStr, JsonOptions);
 
                 // Both cannot be null but are set to nullable for compiler purposes.
-                ulong userId = usernameResponse!.Data!.First().Id;
+                ulong userId = userInfo!.Data!.First().Id;
 
-                
+                var groupsResponseMessage = await GroupsClient.GetAsync($"/v2/users/{userId}/groups/roles?includeLocked=true&includeNotificationPreferences=false");
+                groupsResponseMessage.EnsureSuccessStatusCode();
+                var groupsResponseStr = await groupsResponseMessage.Content.ReadAsStringAsync();
+
+                var groupsResponse = JsonSerializer.Deserialize<GetUserGroupsResponse>(groupsResponseStr, JsonOptions);
+                int groupAmount = groupsResponse!.Data!.Count;
+
+                const ulong USAR_GROUP_ID = 3108077;
+                const int THIRTY_REQUIRED_MEMBERS = 30;
+                const int USAR_E1_RANK = 5;
+
+                List<Under30MembersGroup> groupsUnder30Members = [];
+
+                bool isInUsar = false;
+                bool isE1 = false;
+                string usarRank = String.Empty;
+
+                foreach (var data in groupsResponse.Data)
+                {
+                    if (data.Group!.MemberCount <= THIRTY_REQUIRED_MEMBERS)
+                    {
+                        var getGroupInfoMsg = await GroupsClient.GetAsync($"v2/groups?groupIds={data.Group!.Id}");
+                        getGroupInfoMsg.EnsureSuccessStatusCode();
+                        string getGroupInfoStr = await getGroupInfoMsg.Content.ReadAsStringAsync();
+
+                        var groupInfo = JsonSerializer.Deserialize<GetGroupInfoByIdResponse>(getGroupInfoStr, JsonOptions);
+
+                        ulong ownerId = groupInfo!.Data!.First()!.Owner!.Id;
+
+                        var getOwnerInfoMsg = await UsersClient.GetAsync($"/v1/users/{ownerId}");
+                        getOwnerInfoMsg.EnsureSuccessStatusCode();
+                        string getOwnerInfoStr = await getOwnerInfoMsg.Content.ReadAsStringAsync();
+
+                        var ownerInfo = JsonSerializer.Deserialize<GetUserInfoByIdResponse>
+                            (getOwnerInfoStr, JsonOptions);
+
+                        string ownerUsername = ownerInfo!.Name!;
+
+                        groupsUnder30Members.Add(
+                            new(
+                                id: data.Group!.Id,
+                                name: data.Group!.Name!,
+                                memberCount: data.Group!.MemberCount,
+                                hasVerifiedBadge: data.Group!.HasVerifiedBadge,
+                                ownerId: ownerId,
+                                ownerUsername: ownerUsername
+                            )
+                        );
+                        //Skips checking if the under 30 members group is USAR. (0.01ms improvement :skull:)
+                        continue;
+                    }
+
+                    if (data.Group!.Id == USAR_GROUP_ID)
+                    {
+                        isInUsar = true;
+                        isE1 = data.Role!.Rank == USAR_E1_RANK;
+                        usarRank = data.Role!.Name!;
+                    }
+                }
+
+
 
             }
             catch (Exception ex)

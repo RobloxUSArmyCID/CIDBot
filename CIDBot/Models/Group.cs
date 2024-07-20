@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GroupModel
+    internal class Group
     {
         public ulong Id { get; set; }
         public string? Name { get; set; }
