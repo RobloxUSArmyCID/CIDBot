@@ -2,8 +2,6 @@
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using System.Numerics;
-using System.Text;
 using System.Text.Json;
 
 namespace CIDBot
@@ -27,6 +25,11 @@ namespace CIDBot
         readonly static HttpClient BadgesClient = new()
         {
             BaseAddress = new Uri("https://badges.roblox.com")
+        };
+
+        readonly static HttpClient FriendsClient = new()
+        {
+            BaseAddress = new Uri("https://friends.roblox.com")
         };
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
@@ -185,9 +188,24 @@ namespace CIDBot
                     else pastUsernamesNextPageCursor = pastUsernamesJson.NextPageCursor;
                 }
 
+                var userInfoByIdMsg = await UsersClient.GetAsync($"/v1/users/{userId}");
+                userInfoByIdMsg.EnsureSuccessStatusCode();
+                string userInfoByIdStr = await userInfoByIdMsg.Content.ReadAsStringAsync();
 
+                var userInfoById = JsonSerializer.Deserialize<GetUserInfoByIdResponse>(userInfoByIdStr, JsonOptions);
 
-                await cmd.FollowupAsync();
+                var createdDateTime = userInfoById!.Created;
+                var todayToCreatedSpan = DateTime.Now - createdDateTime;
+                
+                int daysFromCreated = todayToCreatedSpan!.Value.Days;
+
+                var friendsCountMsg = await FriendsClient.GetAsync($"/v1/users/{userId}/friends/count");
+                friendsCountMsg.EnsureSuccessStatusCode();
+                string friendsCountStr = await friendsCountMsg.Content.ReadAsStringAsync();
+
+                var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, JsonOptions);
+                int amountOfFriends = friendsCount!.Count;
+
 
             }
             catch (Exception ex)

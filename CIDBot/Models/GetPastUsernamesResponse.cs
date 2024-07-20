@@ -4,6 +4,6 @@
     {
         public string? PreviousPageCursor { get; set; }
         public string? NextPageCursor { get; set; }
-        public IList<GetPastUsernamesResponseData> Data { get; set; }
+        public IList<GetPastUsernamesResponseData>? Data { get; set; }
     }
 }
