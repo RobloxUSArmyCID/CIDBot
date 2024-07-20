@@ -32,6 +32,11 @@ namespace CIDBot
             BaseAddress = new Uri("https://friends.roblox.com")
         };
 
+        readonly static HttpClient ThumbnailsClient = new()
+        {
+            BaseAddress = new Uri("https://thumbnails.roblox.com")
+        };
+
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
             if (cmd.CommandName == "bgcheck") await OnBgcheckCommand(cmd);
@@ -206,7 +211,14 @@ namespace CIDBot
                 var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, JsonOptions);
                 int amountOfFriends = friendsCount!.Count;
 
+                var avatarHeadshotMsg = await ThumbnailsClient.GetAsync($"/v1/users/avatar-headshot?userIds={userId}&size=150x150&format=Webp&isCircular=false");
+                avatarHeadshotMsg.EnsureSuccessStatusCode();
+                string avatarHeadshotStr = await avatarHeadshotMsg.Content.ReadAsStringAsync();
 
+                var avatarHeadshot = JsonSerializer.Deserialize<GetAvatarHeadshotResponse>(avatarHeadshotStr, JsonOptions);
+                string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
+
+                
             }
             catch (Exception ex)
             {
