@@ -2,6 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text;
 using System.Text.Json;
 
 namespace CIDBot
@@ -47,11 +48,13 @@ namespace CIDBot
             try
             {
                 await cmd.DeferAsync();
+                string username = (string)cmd.Data.Options.First().Value;
+
                 GetUserInfoByUsernameRequest userInfoByUsernameRequest = new()
                 {
                     Usernames = [
                         //Guranteed to be a string as that is what the command requires
-                        (string) cmd.Data.Options.First().Value
+                        username
                     ],
                     ExcludeBannedUsers = true
                 };
@@ -67,6 +70,7 @@ namespace CIDBot
 
                 // Both cannot be null but are set to nullable for compiler purposes.
                 ulong userId = userInfo!.Data!.First().Id;
+                username = userInfo!.Data!.First().Name!;
 
                 var groupsResponseMessage = await GroupsClient.GetAsync($"/v2/users/{userId}/groups/roles?includeLocked=true&includeNotificationPreferences=false");
                 groupsResponseMessage.EnsureSuccessStatusCode();
@@ -218,7 +222,104 @@ namespace CIDBot
                 var avatarHeadshot = JsonSerializer.Deserialize<GetAvatarHeadshotResponse>(avatarHeadshotStr, JsonOptions);
                 string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
 
+                StringBuilder descriptionBuilder = new();
+
+                bool failedBackgroundCheck = false;
+
+                if (!isInUsar)
+                {
+                    descriptionBuilder.AppendLine("- ⚠ Not in USAR ⚠ ");
+                    failedBackgroundCheck = true;
+                }
+
+                if (isE1)
+                {
+                    descriptionBuilder.AppendLine("- ⚠ E1 ⚠ ");
+                    failedBackgroundCheck = true;
+                }
+                if (!has200OrMoreBadges)
+                {
+                    descriptionBuilder.AppendLine($"- ⚠ Less than 200 badges ({badges}) ⚠ ");
+                    failedBackgroundCheck = true;
+                }
+
+                const int NINETY_REQUIRED_DAYS_FOR_ENTRANCE = 90;
+                const int ONE_YEAR_IN_DAYS = 365;
                 
+                if (daysFromCreated < ONE_YEAR_IN_DAYS)
+                {
+                    if (daysFromCreated < NINETY_REQUIRED_DAYS_FOR_ENTRANCE)
+                    {
+                        descriptionBuilder.AppendLine($"- ⚠ Account age under 90 days old ({daysFromCreated}) (failing) ⚠");
+                        failedBackgroundCheck = true;
+                    }
+                    else
+                    {
+                        descriptionBuilder.AppendLine($"- ⚠ Account age under 365 days old (suspicious, not failing) ⚠ ");
+                    }
+                }
+
+                if (amountOfFriends <= 3)
+                {
+                    descriptionBuilder.Append($"- ⚠ 3 or less friends. ⚠");
+                    failedBackgroundCheck = true;
+                }
+                
+
+                if (groupsUnder30Members.Count > 0)
+                {
+                    groupsUnder30Members.ForEach(
+                        group => descriptionBuilder.AppendLine($"- ⚠ Suspicious group: {group.Name} ({group.MemberCount} members) - owned by {group.OwnerUsername} ⚠"));
+                }
+
+                if (pastUsernames.Count > 0)
+                {
+                    descriptionBuilder.AppendLine($"• Past username{(pastUsernames.Count != 1 ? "s" : "")}: {String.Join(", ", pastUsernames)}");
+                }
+
+                if (descriptionBuilder.Length == 0)
+                {
+                    descriptionBuilder.AppendLine("+ No concerns found! **(Verify punishments and criteria not checked by the bot.)**");
+                }
+
+                string description = descriptionBuilder.ToString();
+
+                Embed embed = new EmbedBuilder()
+                    .WithAuthor(cmd.User)
+                    .WithTitle(":white_check_mark: | Background check finished!")
+                    .WithDescription($"```diff\n{description}```")
+                    .WithColor(Color.Blue)
+                    .WithCurrentTimestamp()
+                    .WithThumbnailUrl(thumbnailUrl)
+                    .WithFields(
+                        [
+                            new EmbedFieldBuilder()
+                                .WithName("Username:")
+                                .WithValue($"```{username}```")
+                                .WithIsInline(true),
+                            new EmbedFieldBuilder()
+                                .WithName("ID:")
+                                .WithValue($"```{userId}```")
+                                .WithIsInline(true),
+                            new EmbedFieldBuilder()
+                                .WithName("Failed:")
+                                .WithValue($"```diff\n{(failedBackgroundCheck ? "- Yes" : "+ No")}```")
+                                .WithIsInline(true),
+                            new EmbedFieldBuilder()
+                                .WithName("USAR Rank:")
+                                .WithValue($"```{(isInUsar ? usarRank : "N/A")}```")
+                                .WithIsInline(true),
+                            new EmbedFieldBuilder()
+                                .WithName("Account Age:")
+                                .WithValue($"```{daysFromCreated} day{(daysFromCreated != 1 ? "s" : "")} old```")
+                                .WithIsInline(true),
+                        ]
+                    )
+                    .Build();
+
+
+                await cmd.FollowupAsync(embed: embed);
+
             }
             catch (Exception ex)
             {
