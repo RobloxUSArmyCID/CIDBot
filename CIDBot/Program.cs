@@ -14,7 +14,7 @@ internal sealed class Program
         var clientConfig = new DiscordSocketConfig()
         {
             AlwaysDownloadUsers = true,
-            GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
+            GatewayIntents = GatewayIntents.AllUnprivileged
         };
 
         var jsonSerializerOptions = new JsonSerializerOptions()
