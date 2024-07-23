@@ -279,7 +279,7 @@ namespace CIDBot
 
                 if (descriptionBuilder.Length == 0)
                 {
-                    descriptionBuilder.AppendLine("+ No concerns found! **(Verify punishments and criteria not checked by the bot.)**");
+                    descriptionBuilder.AppendLine("+ No concerns found! (Verify punishments and criteria not checked by the bot.)");
                 }
 
                 string description = descriptionBuilder.ToString();
