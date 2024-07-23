@@ -4,7 +4,7 @@ The United States Army Criminal Inverstigation Division's background checking bo
 
 ###### Current token: MTI2MzgzMTYyMDUxOTk4OTMxMA.GsevhD.tM47MfbTbbf_tseeIRyh58z9t4XMUyuVCXUV84
 
-# Download Instructions
+# Download instructions
 1. On this page, click on actions.
 2. Select the top build.
 3. Download the artifact for your operating system and architecture.
@@ -31,6 +31,10 @@ chmod +x (DRAG AND DROP THE FILE HERE)
 - Drag and drop the file into the terminal window and press enter.
 > On macOS, you may have to open privacy & security settings and approve the file there.
 
+# Closing the bot - instructions
+- Press Ctrl/Cmd+C
+- Or close the terminal/PowerShell window.
+
 # Changing the token - instructions for CID HICOM
 1. Go to https://discord.com/developers/applications
 2. Select the CID Bot.
@@ -42,7 +46,6 @@ chmod +x (DRAG AND DROP THE FILE HERE)
 8. Commit changes, but add `[skip ci]` to the title.
 > This is so there won't be a new build of the bot for changing the token. (Picture for reference)
 ![image](https://github.com/user-attachments/assets/deb6417e-ec0d-4f83-ad31-8deeda7d7a5b)
-
 
 *Made with :heart:,
 in Poland,
