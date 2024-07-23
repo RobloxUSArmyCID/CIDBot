@@ -287,6 +287,7 @@ namespace CIDBot
                 Embed embed = new EmbedBuilder()
                     .WithAuthor(cmd.User)
                     .WithTitle(":white_check_mark: | Background check finished!")
+                    .WithUrl($"https://www.roblox.com/users/{userId}/profile")
                     .WithDescription($"```diff\n{description}```")
                     .WithColor(Color.Blue)
                     .WithCurrentTimestamp()
