@@ -45,7 +45,5 @@ chmod +x (DRAG AND DROP THE FILE HERE)
 
 
 *Made with :heart:,
-
 in Poland,
-
 by f_o1oo.*
