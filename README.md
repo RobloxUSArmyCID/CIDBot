@@ -40,9 +40,12 @@ chmod +x (DRAG AND DROP THE FILE HERE)
 6. Click on the README.md file in this repository.
 7. Change the token in the appropriate line.
 8. Commit changes, but add `[skip ci]` to the title.
-> This is so there won't be a new build of the bot for changing the token.
+> This is so there won't be a new build of the bot for changing the token. (Picture for reference)
+![image](https://github.com/user-attachments/assets/deb6417e-ec0d-4f83-ad31-8deeda7d7a5b)
 
 
 *Made with :heart:,
+
 in Poland,
+
 by f_o1oo.*
