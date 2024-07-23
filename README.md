@@ -32,9 +32,14 @@ chmod +x (DRAG AND DROP THE FILE HERE)
 > On macOS, you may have to open privacy & security settings and approve the file there.
 
 # Changing the token - instructions for CID HICOM
-1. Click on the README.md file in this repository.
-2. Change the token in the appropriate line.
-3. Commit changes, but add `[skip ci]` to the title.
+1. Go to https://discord.com/developers/applications
+2. Select the CID Bot.
+3. Click on Bot.
+4. Click on Reset Token.
+5. Put in your Discord 2FA.
+6. Click on the README.md file in this repository.
+7. Change the token in the appropriate line.
+8. Commit changes, but add `[skip ci]` to the title.
 > This is so there won't be a new build of the bot for changing the token.
 
 
