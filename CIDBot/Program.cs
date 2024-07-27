@@ -13,8 +13,10 @@ internal sealed class Program
     {
         var clientConfig = new DiscordSocketConfig()
         {
-            AlwaysDownloadUsers = true,
-            GatewayIntents = GatewayIntents.AllUnprivileged
+            AlwaysDownloadUsers = false,
+            GatewayIntents = GatewayIntents.AllUnprivileged &
+                GatewayIntents.GuildScheduledEvents &
+                GatewayIntents.GuildInvites
         };
 
         var jsonSerializerOptions = new JsonSerializerOptions()
