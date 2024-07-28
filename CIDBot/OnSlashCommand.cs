@@ -43,6 +43,18 @@ namespace CIDBot
             if (cmd.CommandName == "bgcheck") await OnBgcheckCommand(cmd);
         }
 
+        async Task NoUsernameFoundAsync(SocketSlashCommand cmd, string username)
+        {
+            Embed embed = new EmbedBuilder()
+                .WithAuthor(cmd.User)
+                .WithColor(Color.Red)
+                .WithCurrentTimestamp()
+                .WithTitle(":x: | No user found!")
+                .WithDescription($"The user `{username}` doesn't exist or is banned on Roblox. Please verify the spelling.")
+                .Build();
+            await cmd.FollowupAsync(embed: embed);
+        }
+
         async Task OnBgcheckCommand(SocketSlashCommand cmd)
         {
             try
@@ -67,6 +79,12 @@ namespace CIDBot
 
                 var userInfo = JsonSerializer.Deserialize<GetUserInfoByUsernameResponse>
                     (userInfoByUsernameResponseStr, JsonOptions);
+
+                if (userInfo!.Data!.Count == 0)
+                {
+                    await NoUsernameFoundAsync(cmd, username);
+                    return;
+                }
 
                 // Both cannot be null but are set to nullable for compiler purposes.
                 ulong userId = userInfo!.Data!.First().Id;
