@@ -14,9 +14,12 @@ internal sealed class Program
         var clientConfig = new DiscordSocketConfig()
         {
             AlwaysDownloadUsers = false,
-            GatewayIntents = GatewayIntents.AllUnprivileged &
-                GatewayIntents.GuildScheduledEvents &
-                GatewayIntents.GuildInvites
+            GatewayIntents = GatewayIntents.AllUnprivileged
+                // & represents a binary AND operation
+                // which combined with the | binary OR operation
+                // results in the intents being removed
+                & GatewayIntents.GuildScheduledEvents
+                & GatewayIntents.GuildInvites
         };
 
         var jsonSerializerOptions = new JsonSerializerOptions()
