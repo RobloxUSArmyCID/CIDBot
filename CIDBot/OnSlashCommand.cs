@@ -307,6 +307,11 @@ namespace CIDBot
 
                 string description = descriptionBuilder.ToString();
 
+                if (description.Length > 4096)
+                {
+                    description = "- ❌ Embed description too long! Please manually background check the user! ❌";
+                }
+
                 Embed embed = new EmbedBuilder()
                     .WithAuthor(cmd.User)
                     .WithTitle(":white_check_mark: | Background check finished!")
