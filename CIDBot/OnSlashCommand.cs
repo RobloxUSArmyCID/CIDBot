@@ -279,13 +279,13 @@ namespace CIDBot
 
                 if (amountOfFriends <= 3)
                 {
-                    descriptionBuilder.Append($"- ⚠ 3 or less friends. ⚠");
+                    descriptionBuilder.AppendLine($"- ⚠ 3 or less friends. ⚠");
                     failedBackgroundCheck = true;
                 }
                 
                 if (groupAmount <= 15)
                 {
-                    descriptionBuilder.Append($"- ⚠ In 15 or less groups ({groupAmount}) ⚠");
+                    descriptionBuilder.AppendLine($"- ⚠ In 15 or less groups ({groupAmount}) ⚠");
                     failedBackgroundCheck = true;
                 }
 
