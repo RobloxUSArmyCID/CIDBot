@@ -283,6 +283,11 @@ namespace CIDBot
                     failedBackgroundCheck = true;
                 }
                 
+                if (groupAmount <= 15)
+                {
+                    descriptionBuilder.Append($"- ⚠ In 15 or less groups ({groupAmount}) ⚠");
+                    failedBackgroundCheck = true;
+                }
 
                 if (groupsUnder30Members.Count > 0)
                 {
