@@ -65,7 +65,6 @@ namespace CIDBot
                 GetUserInfoByUsernameRequest userInfoByUsernameRequest = new()
                 {
                     Usernames = [
-                        //Guranteed to be a string as that is what the command requires
                         username
                     ],
                     ExcludeBannedUsers = true
