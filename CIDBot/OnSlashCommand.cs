@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using System.Text.Json;
+using F23.StringSimilarity;
 
 namespace CIDBot
 {
@@ -37,6 +38,8 @@ namespace CIDBot
         {
             BaseAddress = new Uri("https://thumbnails.roblox.com")
         };
+
+        readonly static NormalizedLevenshtein _levenshtein = new();
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
@@ -239,6 +242,23 @@ namespace CIDBot
                 var avatarHeadshot = JsonSerializer.Deserialize<GetAvatarHeadshotResponse>(avatarHeadshotStr, JsonOptions);
                 string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
 
+                var userFriendsMsg = await FriendsClient.GetAsync($"/v1/users/{userId}/friends");
+                userFriendsMsg.EnsureSuccessStatusCode();
+                string userFriendsStr = await userFriendsMsg.Content.ReadAsStringAsync();
+
+                var userFriends = JsonSerializer.Deserialize<GetUserFriendsResponse>(userFriendsStr, JsonOptions);
+
+                // CLOSER TO 1 - THE LESS SIMILAR
+                // CLOSER TO 0 - THE MORE SIMILAR
+                // 0.72 WAS PICKED ALONGSIDE CID HICOM DUE TO THE ALGORITHM
+                List<string?> usernamesOfSuspiciousFriends = userFriends!.Data!.Where(friend =>
+                {
+                    return _levenshtein.Distance(friend.Name, username) <= 0.72;
+                })
+                .Select(friend => friend.Name)
+                .ToList();
+                
+
                 StringBuilder descriptionBuilder = new();
 
                 bool failedBackgroundCheck = false;
@@ -299,10 +319,16 @@ namespace CIDBot
                     descriptionBuilder.AppendLine($"• Past username{(pastUsernames.Count != 1 ? "s" : "")}: {String.Join(", ", pastUsernames)}");
                 }
 
+                if (usernamesOfSuspiciousFriends.Count > 0)
+                {
+                    descriptionBuilder.AppendLine($"- ⚠ Suspected Alt{(usernamesOfSuspiciousFriends.Count != 1 ? "s" : "")} in Friends List: {String.Join(", ", usernamesOfSuspiciousFriends)} ⚠");
+                }
+
                 if (descriptionBuilder.Length == 0)
                 {
                     descriptionBuilder.AppendLine("+ No concerns found! (Verify punishments and criteria not checked by the bot.)");
                 }
+
 
                 string description = descriptionBuilder.ToString();
 
