@@ -39,7 +39,7 @@ internal sealed class Program
 
         var githubToken = "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";
 
-        SemanticVersion version = new(1, 1, 1);
+        SemanticVersion version = new(1, 1, 2);
 
         var collection = new ServiceCollection()
             .AddSingleton(clientConfig)
