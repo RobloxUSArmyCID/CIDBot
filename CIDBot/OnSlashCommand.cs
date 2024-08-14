@@ -1,14 +1,13 @@
 ﻿using CIDBot.Models;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 using System.Text.Json;
 using F23.StringSimilarity;
 
 namespace CIDBot
 {
-    internal class OnSlashCommand(bool isOlderVersion)
+    internal class OnSlashCommand(OnReady onReady)
     {
         readonly JsonSerializerOptions RobloxJsonOptions = JsonOptions.OtherThanGithub;
 
@@ -41,9 +40,11 @@ namespace CIDBot
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
-            if (isOlderVersion)
+            await onReady.ReadyTaskCompletionSource.Task;
+
+            if (onReady.IsOlderVersion)
             {
-                await cmd.RespondAsync(":x: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
+                await cmd.RespondAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
                 return;
             }
 

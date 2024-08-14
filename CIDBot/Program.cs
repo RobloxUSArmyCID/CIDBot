@@ -39,7 +39,7 @@ internal sealed class Program
 
         var githubToken = "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";
 
-        SemanticVersion version = new(1, 1, 2);
+        SemanticVersion version = new(1, 1, 3);
 
         var collection = new ServiceCollection()
             .AddSingleton(clientConfig)
@@ -68,7 +68,7 @@ internal sealed class Program
         var onReady = new OnReady(_serviceProvider);
         client.Ready += onReady.ClientReadyAsync;
 
-        var onSlashCommand = new OnSlashCommand(onReady.IsOlderVersion);
+        var onSlashCommand = new OnSlashCommand(onReady);
         client.SlashCommandExecuted += onSlashCommand.HandleSlashCommand;
 
         await Task.Delay(-1);

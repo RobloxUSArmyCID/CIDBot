@@ -21,6 +21,7 @@ namespace CIDBot
         };
 
         public bool IsOlderVersion { get; private set; }
+        public TaskCompletionSource<bool> ReadyTaskCompletionSource { get; } = new();
 
         public async Task ClientReadyAsync()
         {
@@ -58,6 +59,7 @@ namespace CIDBot
                     .Build();
 
                 await Client.CreateGlobalApplicationCommandAsync(bgcheckCommand);
+                ReadyTaskCompletionSource.SetResult(true);
             }
             catch (Exception ex)
             {
