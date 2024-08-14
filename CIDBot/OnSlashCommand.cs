@@ -8,7 +8,7 @@ using F23.StringSimilarity;
 
 namespace CIDBot
 {
-    internal class OnSlashCommand(ServiceProvider serviceProvider)
+    internal class OnSlashCommand(ServiceProvider serviceProvider, bool isOlderVersion)
     {
 
        // readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
@@ -43,6 +43,12 @@ namespace CIDBot
 
         public async Task HandleSlashCommand(SocketSlashCommand cmd)
         {
+            if (isOlderVersion)
+            {
+                await cmd.RespondAsync(":x: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
+                return;
+            }
+
             if (cmd.CommandName == "bgcheck") await OnBgcheckCommand(cmd);
         }
 
@@ -274,6 +280,7 @@ namespace CIDBot
                     descriptionBuilder.AppendLine("- ⚠ E1 ⚠ ");
                     failedBackgroundCheck = true;
                 }
+
                 if (!has200OrMoreBadges)
                 {
                     descriptionBuilder.AppendLine($"- ⚠ Less than 200 badges ({badges}) ⚠ ");

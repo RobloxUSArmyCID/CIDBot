@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using NuGet.Versioning;
 using System.Text.Json;
 
 namespace CIDBot;
@@ -28,11 +29,17 @@ internal sealed class Program
             PropertyNameCaseInsensitive = true,
         };
 
+        var githubToken = "Bearer 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";
+
+        SemanticVersion version = new(1, 1, 0);
+
         var collection = new ServiceCollection()
             .AddSingleton(clientConfig)
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<LoggingService>()
-            .AddSingleton(jsonSerializerOptions);
+            .AddSingleton(jsonSerializerOptions)
+            .AddSingleton(githubToken)
+            .AddSingleton(version);
 
         return collection.BuildServiceProvider();
     }
@@ -54,7 +61,7 @@ internal sealed class Program
         var onReady = new OnReady(_serviceProvider);
         client.Ready += onReady.ClientReadyAsync;
 
-        var onSlashCommand = new OnSlashCommand(_serviceProvider);
+        var onSlashCommand = new OnSlashCommand(_serviceProvider, onReady.IsOlderVersion);
         client.SlashCommandExecuted += onSlashCommand.HandleSlashCommand;
 
         await Task.Delay(-1);
