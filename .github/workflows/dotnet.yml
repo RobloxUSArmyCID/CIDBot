@@ -41,6 +41,6 @@ jobs:
       with: 
         artifacts: build/publish/CIDBot/release_win-x64/CIDBot-Win-x64.exe,build/publish/CIDBot/release_osx-x64/CIDBot-macOS-x64,build/publish/CIDBot/release_osx-arm64/CIDBot-macOS-arm64,build/publish/CIDBot/release_linux-x64/CIDBot-Linux-x64
         makeLatest: "true"
-        tag: "$GITHUB_RUN_NUMBER"
+        tag: "${{ github.run_number }}"
         
         
