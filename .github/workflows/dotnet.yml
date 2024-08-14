@@ -28,6 +28,8 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Create required directories
       run: mkdir build
+    - name: Create environment variables
+      run: echo "version=$(cat version.txt)" >> $GITHUB_ENV
     - name: Build for Windows x64
       run: dotnet publish --os win --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-Win-x64' --artifacts-path build/ 
     - name: Build for macOS x64
@@ -41,6 +43,6 @@ jobs:
       with: 
         artifacts: build/publish/CIDBot/release_win-x64/CIDBot-Win-x64.exe,build/publish/CIDBot/release_osx-x64/CIDBot-macOS-x64,build/publish/CIDBot/release_osx-arm64/CIDBot-macOS-arm64,build/publish/CIDBot/release_linux-x64/CIDBot-Linux-x64
         makeLatest: "true"
-        tag: "${{ github.run_number }}"
+        tag: "${{ env.version }}"
         
         
