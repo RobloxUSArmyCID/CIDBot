@@ -5,10 +5,8 @@ The United States Army Criminal Inverstigation Division's background checking bo
 ###### Current token: MTI2MzgzMTYyMDUxOTk4OTMxMA.GsevhD.tM47MfbTbbf_tseeIRyh58z9t4XMUyuVCXUV84
 
 # Download instructions
-1. On this page, click on actions.
-2. On the left-hand side, select `.NET`.
-3. Select the top build.
-4. Download the artifact for your operating system and architecture.
+1. Go to https://github.com/RobloxUSArmyCID/CIDBot/releases/latest
+2. Download the file appropriate for your Operating System and architecture
 
 # Running instructions
 1. Download the zip file.
