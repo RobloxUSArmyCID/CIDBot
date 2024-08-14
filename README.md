@@ -1,6 +1,6 @@
 # CIDBot
 
-The United States Army Criminal Inverstigation Division's background checking bot.
+The United States Army Criminal Investigation Division's background checking bot.
 
 ###### Current token: MTI2MzgzMTYyMDUxOTk4OTMxMA.GsevhD.tM47MfbTbbf_tseeIRyh58z9t4XMUyuVCXUV84
 
