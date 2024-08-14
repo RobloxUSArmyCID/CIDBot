@@ -8,11 +8,9 @@ using F23.StringSimilarity;
 
 namespace CIDBot
 {
-    internal class OnSlashCommand(ServiceProvider serviceProvider, bool isOlderVersion)
+    internal class OnSlashCommand(bool isOlderVersion)
     {
-
-       // readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
-        readonly JsonSerializerOptions JsonOptions = serviceProvider.GetRequiredService<JsonSerializerOptions>();
+        readonly JsonSerializerOptions RobloxJsonOptions = JsonOptions.OtherThanGithub;
 
         readonly static HttpClient GroupsClient = new()
         {
@@ -79,14 +77,14 @@ namespace CIDBot
                     ExcludeBannedUsers = true
                 };
 
-                string userInfoByUsernameRequestStr = JsonSerializer.Serialize(userInfoByUsernameRequest, options: JsonOptions);
+                string userInfoByUsernameRequestStr = JsonSerializer.Serialize(userInfoByUsernameRequest, options: RobloxJsonOptions);
 
                 var userInfoByUsernameResponseMessage = await UsersClient.PostAsync("/v1/usernames/users", new StringContent(userInfoByUsernameRequestStr));
                 userInfoByUsernameResponseMessage.EnsureSuccessStatusCode();
                 var userInfoByUsernameResponseStr = await userInfoByUsernameResponseMessage.Content.ReadAsStringAsync();
 
                 var userInfo = JsonSerializer.Deserialize<GetUserInfoByUsernameResponse>
-                    (userInfoByUsernameResponseStr, JsonOptions);
+                    (userInfoByUsernameResponseStr, RobloxJsonOptions);
 
                 if (userInfo!.Data!.Count == 0)
                 {
@@ -102,7 +100,7 @@ namespace CIDBot
                 groupsResponseMessage.EnsureSuccessStatusCode();
                 var groupsResponseStr = await groupsResponseMessage.Content.ReadAsStringAsync();
 
-                var groupsResponse = JsonSerializer.Deserialize<GetUserGroupsResponse>(groupsResponseStr, JsonOptions);
+                var groupsResponse = JsonSerializer.Deserialize<GetUserGroupsResponse>(groupsResponseStr, RobloxJsonOptions);
                 int groupAmount = groupsResponse!.Data!.Count;
 
                 const ulong USAR_GROUP_ID = 3108077;
@@ -123,7 +121,7 @@ namespace CIDBot
                         getGroupInfoMsg.EnsureSuccessStatusCode();
                         string getGroupInfoStr = await getGroupInfoMsg.Content.ReadAsStringAsync();
 
-                        var groupInfo = JsonSerializer.Deserialize<GetGroupInfoByIdResponse>(getGroupInfoStr, JsonOptions);
+                        var groupInfo = JsonSerializer.Deserialize<GetGroupInfoByIdResponse>(getGroupInfoStr, RobloxJsonOptions);
 
                         // group owners can be null
                         // wtf roblox
@@ -136,7 +134,7 @@ namespace CIDBot
                         string getOwnerInfoStr = await getOwnerInfoMsg.Content.ReadAsStringAsync();
 
                         var ownerInfo = JsonSerializer.Deserialize<GetUserInfoByIdResponse>
-                            (getOwnerInfoStr, JsonOptions);
+                            (getOwnerInfoStr, RobloxJsonOptions);
 
                         string ownerUsername = ownerInfo!.Name!;
 
@@ -169,7 +167,7 @@ namespace CIDBot
                 first100BadgesMsg.EnsureSuccessStatusCode();
                 string first100BadgesStr = await first100BadgesMsg.Content.ReadAsStringAsync();
 
-                var first100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(first100BadgesStr, JsonOptions);
+                var first100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(first100BadgesStr, RobloxJsonOptions);
 
                 if (first100Badges!.NextPageCursor is null)
                 {
@@ -182,7 +180,7 @@ namespace CIDBot
                     next100BadgesMsg.EnsureSuccessStatusCode();
                     string next100BadgesStr = await next100BadgesMsg.Content.ReadAsStringAsync();
 
-                    var next100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(next100BadgesStr, JsonOptions);
+                    var next100Badges = JsonSerializer.Deserialize<GetOwnedBadgesByIdResponse>(next100BadgesStr, RobloxJsonOptions);
                     if (next100Badges!.Data!.Count != 100)
                     {
                         badges = next100Badges.Data.Count + 100;
@@ -212,7 +210,7 @@ namespace CIDBot
                     getPastUsernamesMsg.EnsureSuccessStatusCode();
                     string getPastUsernamesStr = await getPastUsernamesMsg.Content.ReadAsStringAsync();
 
-                    var pastUsernamesJson = JsonSerializer.Deserialize<GetPastUsernamesResponse>(getPastUsernamesStr, JsonOptions);
+                    var pastUsernamesJson = JsonSerializer.Deserialize<GetPastUsernamesResponse>(getPastUsernamesStr, RobloxJsonOptions);
 
                     foreach (var pastUsername in pastUsernamesJson!.Data!)
                     {
@@ -227,7 +225,7 @@ namespace CIDBot
                 userInfoByIdMsg.EnsureSuccessStatusCode();
                 string userInfoByIdStr = await userInfoByIdMsg.Content.ReadAsStringAsync();
 
-                var userInfoById = JsonSerializer.Deserialize<GetUserInfoByIdResponse>(userInfoByIdStr, JsonOptions);
+                var userInfoById = JsonSerializer.Deserialize<GetUserInfoByIdResponse>(userInfoByIdStr, RobloxJsonOptions);
 
                 var createdDateTime = userInfoById!.Created;
                 var todayToCreatedSpan = DateTime.Now - createdDateTime;
@@ -238,21 +236,21 @@ namespace CIDBot
                 friendsCountMsg.EnsureSuccessStatusCode();
                 string friendsCountStr = await friendsCountMsg.Content.ReadAsStringAsync();
 
-                var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, JsonOptions);
+                var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, RobloxJsonOptions);
                 int amountOfFriends = friendsCount!.Count;
 
                 var avatarHeadshotMsg = await ThumbnailsClient.GetAsync($"/v1/users/avatar-headshot?userIds={userId}&size=150x150&format=Webp&isCircular=false");
                 avatarHeadshotMsg.EnsureSuccessStatusCode();
                 string avatarHeadshotStr = await avatarHeadshotMsg.Content.ReadAsStringAsync();
 
-                var avatarHeadshot = JsonSerializer.Deserialize<GetAvatarHeadshotResponse>(avatarHeadshotStr, JsonOptions);
+                var avatarHeadshot = JsonSerializer.Deserialize<GetAvatarHeadshotResponse>(avatarHeadshotStr, RobloxJsonOptions);
                 string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
 
                 var userFriendsMsg = await FriendsClient.GetAsync($"/v1/users/{userId}/friends");
                 userFriendsMsg.EnsureSuccessStatusCode();
                 string userFriendsStr = await userFriendsMsg.Content.ReadAsStringAsync();
 
-                var userFriends = JsonSerializer.Deserialize<GetUserFriendsResponse>(userFriendsStr, JsonOptions);
+                var userFriends = JsonSerializer.Deserialize<GetUserFriendsResponse>(userFriendsStr, RobloxJsonOptions);
 
                 // CLOSER TO 1 - THE LESS SIMILAR
                 // CLOSER TO 0 - THE MORE SIMILAR

@@ -4,22 +4,22 @@
     {
         public string? Login { get; set; }
         public ulong Id { get; set; }
-        public string? Node_Id { get; set; }
-        public string? Avatar_Url { get; set; }
-        public string? Gravatar_Id { get; set; }
+        public string? NodeId { get; set; }
+        public string? AvatarUrl { get; set; }
+        public string? GravatarId { get; set; }
         public string? Url { get; set; }
-        public string? Html_Url { get; set; }
-        public string? Followers_Url { get; set; }
-        public string? Following_Url { get; set; }
-        public string? Gists_Url { get; set; }
-        public string? Starred_Url { get; set; }
-        public string? Subscriptions_Url { get; set; }
-        public string? Organizations_Url { get; set; }
-        public string? Repos_Url { get; set; }
-        public string? Events_Url { get; set; }
-        public string? Received_Events_Url { get; set; }
+        public string? HtmlUrl { get; set; }
+        public string? FollowersUrl { get; set; }
+        public string? FollowingUrl { get; set; }
+        public string? GistsUrl { get; set; }
+        public string? StarredUrl { get; set; }
+        public string? SubscriptionsUrl { get; set; }
+        public string? OrganizationsUrl { get; set; }
+        public string? ReposUrl { get; set; }
+        public string? EventsUrl { get; set; }
+        public string? ReceivedEventsUrl { get; set; }
         public string? Type { get; set; }
-        public bool Site_Admin { get; set; }
+        public bool SiteAdmin { get; set; }
 
     }
 }

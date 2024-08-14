@@ -12,7 +12,7 @@ class LoggingService
         client.Log += LogAsync;
     }
 
-    private async Task LogAsync(LogMessage msg)
+    public async Task LogAsync(LogMessage msg)
     {
 
         Log.Logger = new LoggerConfiguration()
