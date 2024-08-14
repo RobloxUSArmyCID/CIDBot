@@ -29,20 +29,20 @@ jobs:
     - name: Create required directories
       run: mkdir build
     - name: Create environment variables
-      run: echo "version=$(cat version.txt)" >> $GITHUB_ENV
+      run: echo "cidbot_version=$(cat CIDBot_Version.txt)" >> $GITHUB_ENV
     - name: Build for Windows x64
-      run: dotnet publish --os win --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-Win-x64' --artifacts-path build/ 
+      run: dotnet publish --os win --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-Win-${{ env.cidbot_version }}-x64' --artifacts-path build/ 
     - name: Build for macOS x64
-      run: dotnet publish --os osx --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-macOS-x64' --artifacts-path build/
+      run: dotnet publish --os osx --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-macOS-${{ env.cidbot_version }}-x64' --artifacts-path build/
     - name: Build for macOS arm64
-      run: dotnet publish --os osx --arch arm64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-macOS-arm64' --artifacts-path build/
+      run: dotnet publish --os osx --arch arm64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-macOS-${{ env.cidbot_version }}-arm64' --artifacts-path build/
     - name: Build for Linux x64
-      run: dotnet publish --os linux --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-Linux-x64' --artifacts-path build/
+      run: dotnet publish --os linux --arch x64 --self-contained true '-p:PublishSingleFile=true;DebugType=embedded;AssemblyName=CIDBot-Linux-${{ env.cidbot_version }}-x64' --artifacts-path build/
     - name: Create release
       uses: ncipollo/release-action@v1.14.0
       with: 
-        artifacts: build/publish/CIDBot/release_win-x64/CIDBot-Win-x64.exe,build/publish/CIDBot/release_osx-x64/CIDBot-macOS-x64,build/publish/CIDBot/release_osx-arm64/CIDBot-macOS-arm64,build/publish/CIDBot/release_linux-x64/CIDBot-Linux-x64
+        artifacts: build/publish/CIDBot/release_win-x64/CIDBot-Win-${{ env.cidbot_version }}-x64.exe,build/publish/CIDBot/release_osx-x64/CIDBot-macOS-${{ env.cidbot_version }}-x64,build/publish/CIDBot/release_osx-arm64/CIDBot-macOS-${{ env.cidbot_version }}-arm64,build/publish/CIDBot/release_linux-x64/CIDBot-Linux-${{ env.cidbot_version }}-x64
         makeLatest: "true"
-        tag: "${{ env.version }}"
+        tag: "${{ env.cidbot_version }}"
         
         
