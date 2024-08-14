@@ -6,8 +6,9 @@ The United States Army Criminal Inverstigation Division's background checking bo
 
 # Download instructions
 1. On this page, click on actions.
-2. Select the top build.
-3. Download the artifact for your operating system and architecture.
+2. On the left-hand side, select `.NET`.
+3. Select the top build.
+4. Download the artifact for your operating system and architecture.
 
 # Running instructions
 1. Download the zip file.
