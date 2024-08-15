@@ -70,7 +70,6 @@ namespace CIDBot
         async Task OnBgcheckCommand
         (
             [Summary(description: "The username of the user you wish to background check")]
-            [Require]
             string username
         )
         {

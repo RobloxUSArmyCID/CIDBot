@@ -10,7 +10,6 @@ namespace CIDBot;
 internal sealed class Program
 {
     static readonly ServiceProvider _serviceProvider = CreateServices();
-    static readonly DiscordSocketClient _client = _serviceProvider.GetRequiredService<DiscordSocketClient>();
 
     static ServiceProvider CreateServices()
     {
@@ -41,14 +40,13 @@ internal sealed class Program
 
         var githubToken = "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";
 
-        var interactions = new InteractionService(_client.Rest);
-
+        var client = new DiscordSocketClient(clientConfig);
+        var interactions = new InteractionService(client.Rest);
 
         SemanticVersion version = new(1, 1, 3);
 
         var collection = new ServiceCollection()
-            .AddSingleton(clientConfig)
-            .AddSingleton<DiscordSocketClient>()
+            .AddSingleton(client)
             .AddSingleton(interactions)
             .AddSingleton<LoggingService>()
             .AddSingleton(githubToken)
