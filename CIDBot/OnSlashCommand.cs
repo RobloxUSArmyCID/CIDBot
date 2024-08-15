@@ -4,12 +4,16 @@ using Discord.WebSocket;
 using System.Text;
 using System.Text.Json;
 using F23.StringSimilarity;
+using Discord.Interactions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CIDBot
 {
-    internal class OnSlashCommand(OnReady onReady)
+    public class OnSlashCommand(IServiceProvider serviceProvider, OnReady onReady) : InteractionModuleBase
     {
         readonly JsonSerializerOptions RobloxJsonOptions = JsonOptions.OtherThanGithub;
+
+        readonly InteractionService _interactions = serviceProvider.GetRequiredService<InteractionService>();
 
         readonly static HttpClient GroupsClient = new()
         {
@@ -38,37 +42,42 @@ namespace CIDBot
 
         readonly static NormalizedLevenshtein _levenshtein = new();
 
-        public async Task HandleSlashCommand(SocketSlashCommand cmd)
+        public async Task HandleSlashCommand()
         {
             await onReady.ReadyTaskCompletionSource.Task;
 
             if (onReady.IsOlderVersion)
             {
-                await cmd.RespondAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
+                await Context.Interaction.RespondAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
                 return;
             }
-
-            if (cmd.CommandName == "bgcheck") await OnBgcheckCommand(cmd);
         }
 
-        async Task NoUsernameFoundAsync(SocketSlashCommand cmd, string username)
+        
+        async Task NoUsernameFoundAsync(string username)
         {
             Embed embed = new EmbedBuilder()
-                .WithAuthor(cmd.User)
+                .WithAuthor(Context.User)
                 .WithColor(Color.Red)
                 .WithCurrentTimestamp()
                 .WithTitle(":x: | No user found!")
                 .WithDescription($"The user `{username}` doesn't exist or is banned on Roblox. Please verify the spelling.")
                 .Build();
-            await cmd.FollowupAsync(embed: embed);
+            await FollowupAsync(embed: embed);
         }
 
-        async Task OnBgcheckCommand(SocketSlashCommand cmd)
+        [SlashCommand("bgcheck", "Background check a Roblox user")]
+        async Task OnBgcheckCommand
+        (
+            [Summary(description: "The username of the user you wish to background check")]
+            [Require]
+            string username
+        )
         {
             try
             {
-                await cmd.DeferAsync();
-                string username = (string)cmd.Data.Options.First().Value;
+                await DeferAsync();
+                
 
                 GetUserInfoByUsernameRequest userInfoByUsernameRequest = new()
                 {
@@ -89,7 +98,7 @@ namespace CIDBot
 
                 if (userInfo!.Data!.Count == 0)
                 {
-                    await NoUsernameFoundAsync(cmd, username);
+                    await NoUsernameFoundAsync(username);
                     return;
                 }
 
@@ -344,7 +353,7 @@ namespace CIDBot
                 }
 
                 Embed embed = new EmbedBuilder()
-                    .WithAuthor(cmd.User)
+                    .WithAuthor(Context.User)
                     .WithTitle(":white_check_mark: | Background check finished!")
                     .WithUrl($"https://www.roblox.com/users/{userId}/profile")
                     .WithDescription($"```diff\n{description}```")
@@ -378,20 +387,20 @@ namespace CIDBot
                     .Build();
 
 
-                await cmd.FollowupAsync(embed: embed);
+                await FollowupAsync(embed: embed);
 
             }
             catch (Exception ex)
             {
                 Embed failureEmbed = new EmbedBuilder()
-                    .WithAuthor(cmd.User)
+                    .WithAuthor(Context.User)
                     .WithColor(Color.DarkRed)
                     .WithTitle(":x: | An error occured!")
                     .WithDescription($"Unhandled exception:\n```\n{ex}```")
                     .WithFooter("If you believe this is an error, contact the Investigatory Director.")
                     .WithCurrentTimestamp()
                     .Build();
-                await cmd.FollowupAsync(embed: failureEmbed);
+                await FollowupAsync(embed: failureEmbed);
                 throw;
             }
         }

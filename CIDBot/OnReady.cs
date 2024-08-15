@@ -7,7 +7,7 @@ using NuGet.Versioning;
 
 namespace CIDBot
 {
-    internal class OnReady(ServiceProvider serviceProvider)
+    public class OnReady(ServiceProvider serviceProvider)
     {
         readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
         readonly string GithubToken = serviceProvider.GetRequiredService<string>();
