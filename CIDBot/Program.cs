@@ -34,7 +34,7 @@ internal sealed class Program
 
         var interactions = new InteractionService(client.Rest, interactionsConfig);
 
-        SemanticVersion version = new(1, 0, 0);
+        SemanticVersion version = new(1, 2, 0);
 
         var collection = new ServiceCollection()
             .AddSingleton(client)
