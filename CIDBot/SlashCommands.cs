@@ -1,6 +1,5 @@
 ﻿using CIDBot.Models;
 using Discord;
-using Discord.WebSocket;
 using System.Text;
 using System.Text.Json;
 using F23.StringSimilarity;
@@ -9,11 +8,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CIDBot
 {
-    public class OnSlashCommand(IServiceProvider serviceProvider, OnReady onReady) : InteractionModuleBase
+    public class SlashCommands : InteractionModuleBase
     {
-        readonly JsonSerializerOptions RobloxJsonOptions = JsonOptions.OtherThanGithub;
+        public OnReady _onReady;
+        public JsonOptions _jsonOptions;
+        public SlashCommands(OnReady onReady, JsonOptions jsonOptions)
+        {
+            _onReady = onReady;
+            _jsonOptions = jsonOptions;
+            RobloxJsonOptions = _jsonOptions.OtherThanGithub;
+        }
 
-        readonly InteractionService _interactions = serviceProvider.GetRequiredService<InteractionService>();
+        public JsonSerializerOptions RobloxJsonOptions;
+
+        //readonly InteractionService _interactions = serviceProvider.GetRequiredService<InteractionService>();
 
         readonly static HttpClient GroupsClient = new()
         {
@@ -42,18 +50,17 @@ namespace CIDBot
 
         readonly static NormalizedLevenshtein _levenshtein = new();
 
-        public async Task HandleSlashCommand()
+        public async Task<bool> IsNewBotVersionAvailable()
         {
-            await onReady.ReadyTaskCompletionSource.Task;
+            await _onReady.ReadyTaskCompletionSource.Task;
 
-            if (onReady.IsOlderVersion)
+            if (_onReady.IsOlderVersion)
             {
-                await Context.Interaction.RespondAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
-                return;
+                return true;
             }
+            return false;
         }
 
-        
         async Task NoUsernameFoundAsync(string username)
         {
             Embed embed = new EmbedBuilder()
@@ -75,8 +82,15 @@ namespace CIDBot
         {
             try
             {
-                await DeferAsync();
                 
+                await DeferAsync();
+                bool newVersionAvailable = await IsNewBotVersionAvailable();
+
+                if (newVersionAvailable)
+                {
+                    await FollowupAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
+                    return;
+                }
 
                 GetUserInfoByUsernameRequest userInfoByUsernameRequest = new()
                 {
@@ -205,7 +219,7 @@ namespace CIDBot
                 string? pastUsernamesNextPageCursor = null;
                 while (true)
                 {
-                    HttpResponseMessage? getPastUsernamesMsg = null;
+                    HttpResponseMessage? getPastUsernamesMsg;
 
                     if (pastUsernamesNextPageCursor is not null)
                     {

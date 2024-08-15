@@ -6,7 +6,7 @@ using Discord.Interactions;
 
 namespace CIDBot;
 
-class LoggingService
+public class LoggingService
 {
     public LoggingService(DiscordSocketClient client, InteractionService interactions)
     {
