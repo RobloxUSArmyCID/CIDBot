@@ -2,14 +2,16 @@
 using Serilog;
 using Discord.WebSocket;
 using Serilog.Events;
+using Discord.Interactions;
 
 namespace CIDBot;
 
-class LoggingService
+public class LoggingService
 {
-    public LoggingService(DiscordSocketClient client)
+    public LoggingService(DiscordSocketClient client, InteractionService interactions)
     {
         client.Log += LogAsync;
+        interactions.Log += LogAsync;
     }
 
     public async Task LogAsync(LogMessage msg)

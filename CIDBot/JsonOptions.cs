@@ -2,16 +2,16 @@
 
 namespace CIDBot
 {
-    internal static class JsonOptions
+    public class JsonOptions
     {
-        public static JsonSerializerOptions Github = new()
+        public JsonSerializerOptions Github = new()
         {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
         };
 
-        public static JsonSerializerOptions OtherThanGithub = new()
+        public JsonSerializerOptions OtherThanGithub = new()
         {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true

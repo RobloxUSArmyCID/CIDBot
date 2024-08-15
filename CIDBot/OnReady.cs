@@ -4,16 +4,28 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using NuGet.Versioning;
+using Discord.Interactions;
 
 namespace CIDBot
 {
-    internal class OnReady(ServiceProvider serviceProvider)
+    public class OnReady
     {
-        readonly DiscordSocketClient Client = serviceProvider.GetRequiredService<DiscordSocketClient>();
-        readonly string GithubToken = serviceProvider.GetRequiredService<string>();
-        readonly JsonSerializerOptions GithubJsonOptions = JsonOptions.Github;
-        readonly SemanticVersion BotVersion = serviceProvider.GetRequiredService<SemanticVersion>();
-        readonly LoggingService Logging = serviceProvider.GetRequiredService<LoggingService>();
+        public OnReady(DiscordSocketClient client, string githubToken, JsonOptions jsonOptions, SemanticVersion botVersion, LoggingService logging, InteractionService interactions)
+        {
+            Client = client;
+            GithubToken = githubToken;
+            GithubJsonOptions = jsonOptions.Github;
+            BotVersion = botVersion;
+            Logging = logging;
+            Interactions = interactions;
+        }
+
+        readonly DiscordSocketClient Client;
+        readonly string GithubToken;
+        readonly JsonSerializerOptions GithubJsonOptions;
+        readonly SemanticVersion BotVersion;
+        readonly LoggingService Logging;
+        readonly InteractionService Interactions;
 
         readonly HttpClient GithubClient = new() 
         {
@@ -42,23 +54,13 @@ namespace CIDBot
                 // I am NOT stripping the "v" because some library doesn't understand NAMING
                 // IF A DEVELOPER AFTER ME REMOVES THE "v" YOU WILL NOT COMPILE
                 // AND YOU HAVE A SMALL ONE
-                latestRelease!.TagName = latestRelease!.TagName!.Substring(1);
+                latestRelease!.TagName = latestRelease!.TagName![1..];
                 IsOlderVersion = SemanticVersion.Parse(latestRelease!.TagName) > BotVersion;
 
                 await Client.SetActivityAsync(new CustomStatusGame("Background checking..."));
 
-                var bgcheckCommand = new SlashCommandBuilder()
-                    .WithName("bgcheck")
-                    .WithDescription("Background check a Roblox user")
-                    .AddOption(
-                        name: "username",
-                        description: "The username of the user you wish to background check",
-                        isRequired: true,
-                        type: ApplicationCommandOptionType.String
-                    )
-                    .Build();
+                await Interactions.RegisterCommandsGloballyAsync();
 
-                await Client.CreateGlobalApplicationCommandAsync(bgcheckCommand);
                 ReadyTaskCompletionSource.SetResult(true);
             }
             catch (Exception ex)
