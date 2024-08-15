@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using F23.StringSimilarity;
 using Discord.Interactions;
-using Microsoft.Extensions.DependencyInjection;
+using Discord.WebSocket;
 
 namespace CIDBot
 {
@@ -20,6 +20,7 @@ namespace CIDBot
         }
 
         public JsonSerializerOptions RobloxJsonOptions;
+        const string NEW_VERSION_AVAILABLE_UPDATE = ":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.";
 
         //readonly InteractionService _interactions = serviceProvider.GetRequiredService<InteractionService>();
 
@@ -49,6 +50,7 @@ namespace CIDBot
         };
 
         readonly static NormalizedLevenshtein _levenshtein = new();
+        
 
         public async Task<bool> IsNewBotVersionAvailable()
         {
@@ -59,6 +61,19 @@ namespace CIDBot
                 return true;
             }
             return false;
+        }
+
+        public async Task SlashCommandErrored(Exception ex)
+        {
+            Embed failureEmbed = new EmbedBuilder()
+                    .WithAuthor(Context.User)
+                    .WithColor(Color.DarkRed)
+                    .WithTitle(":x: | An error occured!")
+                    .WithDescription($"Unhandled exception:\n```\n{ex}```")
+                    .WithFooter("If you believe this is an error, contact the Investigatory Director.")
+                    .WithCurrentTimestamp()
+                    .Build();
+            await FollowupAsync(embed: failureEmbed);
         }
 
         async Task NoUsernameFoundAsync(string username)
@@ -74,7 +89,7 @@ namespace CIDBot
         }
 
         [SlashCommand("bgcheck", "Background check a Roblox user")]
-        async Task OnBgcheckCommand
+        async Task BgcheckCommand
         (
             [Summary(description: "The username of the user you wish to background check")]
             string username
@@ -88,7 +103,7 @@ namespace CIDBot
 
                 if (newVersionAvailable)
                 {
-                    await FollowupAsync(":arrows_counterclockwise: | A newer version is available! Please update at https://github.com/RobloxUSArmyCID/CIDBot/releases/latest and run the newer version of the bot.");
+                    await FollowupAsync(NEW_VERSION_AVAILABLE_UPDATE);
                     return;
                 }
 
@@ -405,17 +420,80 @@ namespace CIDBot
             }
             catch (Exception ex)
             {
-                Embed failureEmbed = new EmbedBuilder()
-                    .WithAuthor(Context.User)
-                    .WithColor(Color.DarkRed)
-                    .WithTitle(":x: | An error occured!")
-                    .WithDescription($"Unhandled exception:\n```\n{ex}```")
-                    .WithFooter("If you believe this is an error, contact the Investigatory Director.")
-                    .WithCurrentTimestamp()
-                    .Build();
-                await FollowupAsync(embed: failureEmbed);
+                await SlashCommandErrored(ex);
                 throw;
             }
+        }
+
+        //[RequireUserPermission(GuildPermission.Administrator)]
+        [SlashCommand("setup", "Setup CID Bot (temporary)")]
+        public async Task SetupCommand
+        (
+            [Summary("submissions_channel", "Channel with the message for submissions")]
+            SocketTextChannel submissionsChannel,
+            [Summary("section_staff_punishments_log", "Channel with the punishment logs visible to Section Staff")]
+            SocketTextChannel sectionStaffPunishmentsLogChannel,
+            [Summary("battalion_staff_punishments_log", "Channel with the punishment logs visible to Battalion Staff")]
+            SocketTextChannel battalionStaffPunishmentsLogChannel,
+            [Summary("section_staff_role", "Section Staff Role")]
+            SocketRole sectionStaffRole,
+            [Summary("battalion_staff_role", "Battalion Staff Role")]
+            SocketRole battalionStaffRole
+        )
+        {
+            try
+            {
+                await DeferAsync();
+                Console.WriteLine("setup command started");
+                bool newerVersionAvailable = await IsNewBotVersionAvailable();
+                if (newerVersionAvailable) 
+                {
+                    await FollowupAsync(NEW_VERSION_AVAILABLE_UPDATE);
+                    return;
+                }
+
+                Embed submissionEmbed = new EmbedBuilder()
+                    .WithAuthor("Criminal Investigation Division")
+                    .WithColor(Color.Magenta)
+                    .WithCurrentTimestamp()
+                    .WithTitle("FILE SUBMISSION")
+                    .WithDescription("Please select the action file you wish to submit.")
+                    .Build();
+                var fileMenuBuilder = new SelectMenuBuilder()
+                    .WithPlaceholder("Select an action file")
+                    .WithCustomId($"file-{Context.Interaction.User.Id}")
+                    .WithMinValues(1)
+                    .WithMaxValues(1)
+                    .AddOption("Punishment Request", "punishment", "Temporairly the only option");
+                var components = new ComponentBuilder()
+                    .WithSelectMenu(fileMenuBuilder)
+                    .Build();
+
+
+                // TEMPORARY SOLUTION PRE-DATABASE
+                TemporaryJson temp = new()
+                {
+                    BattalionStaffPunishmentChannel = battalionStaffPunishmentsLogChannel.Id,
+                    SectionStaffPunishmentChannel = sectionStaffPunishmentsLogChannel.Id,
+                    BattalionStaffRole = battalionStaffRole.Id,
+                    SectionStaffRole = sectionStaffRole.Id,
+                };
+                string json = JsonSerializer.Serialize(temp);
+                StreamWriter str = File.CreateText("temp.json");
+                str.WriteLine(json);
+                str.Close();
+
+                await submissionsChannel.SendMessageAsync(embed: submissionEmbed, components: components);
+                await FollowupAsync("Finished!");
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                await SlashCommandErrored(ex);
+                throw;
+            }
+
         }
     }
 }

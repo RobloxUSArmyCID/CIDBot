@@ -15,7 +15,7 @@ internal sealed class Program
         var clientConfig = new DiscordSocketConfig()
         {
             AlwaysDownloadUsers = false,
-            GatewayIntents = GatewayIntents.AllUnprivileged
+            GatewayIntents = (GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers)
                 // & represents a binary AND operation
                 // which combined with the | binary OR operation
                 // results in the intents being removed
@@ -29,12 +29,13 @@ internal sealed class Program
 
         var interactionsConfig = new InteractionServiceConfig()
         {
-            UseCompiledLambda = true
+            UseCompiledLambda = true,
+            
         };
 
         var interactions = new InteractionService(client.Rest, interactionsConfig);
 
-        SemanticVersion version = new(1, 2, 0);
+        SemanticVersion version = new(2, 0, 0, "beta");
 
         var collection = new ServiceCollection()
             .AddSingleton(client)
