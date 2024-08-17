@@ -1,4 +1,4 @@
-[skip ci] # CIDBot
+# CIDBot
 
 The United States Army Criminal Investigation Division's background checking bot.
 
