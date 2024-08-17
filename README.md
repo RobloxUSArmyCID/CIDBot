@@ -1,4 +1,4 @@
-# CIDBot
+[skip ci] # CIDBot
 
 The United States Army Criminal Investigation Division's background checking bot.
 
@@ -9,9 +9,7 @@ The United States Army Criminal Investigation Division's background checking bot
 2. Download the file appropriate for your Operating System and architecture
 
 # Running instructions
-1. Download the zip file.
-2. Extract the file.
-3. On Windows:
+1. On Windows:
 - Open PowerShell
 - Type (replacing the text with the actual token, found in the README):
 ```powershell
@@ -20,7 +18,7 @@ $Env:CIDBot_TOKEN="ENTER TOKEN HERE"
 - Drag and drop the file into the PowerShell window and press enter.
 > You may have to wait a little on the first run for your antivirus to scan the file.
 > You may also have to approve the file through Windows SmartScreen by pressing more details, then "Run anyway".
-3. On other platforms
+2. On other platforms
 - Open your terminal.
 - Type in (replacing the text and drag-and-dropping where required):
 ```bash
