@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetAvatarHeadshotResponseData
+    internal class AvatarHeadshot
     {
         public ulong TargetId { get; set; }
         public string? State { get; set; }

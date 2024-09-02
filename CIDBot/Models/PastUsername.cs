@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetPastUsernamesResponseData
+    internal class PastUsername
     {
         public string? Name { get; set; }
     }

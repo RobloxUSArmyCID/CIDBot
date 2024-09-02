@@ -49,7 +49,7 @@ namespace CIDBot
                 getLatestReleaseMsg.EnsureSuccessStatusCode();
                 var getLatestReleaseStr = await getLatestReleaseMsg.Content.ReadAsStringAsync();
 
-                var latestRelease = JsonSerializer.Deserialize<GetLatestGithubReleaseResponse>(getLatestReleaseStr, GithubJsonOptions);
+                var latestRelease = JsonSerializer.Deserialize<GithubRelease>(getLatestReleaseStr, GithubJsonOptions);
 
                 // I am NOT stripping the "v" because some library doesn't understand NAMING
                 // IF A DEVELOPER AFTER ME REMOVES THE "v" YOU WILL NOT COMPILE

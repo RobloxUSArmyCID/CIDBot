@@ -2,7 +2,7 @@
 
 namespace CIDBot.Models
 {
-    internal class GetLatestGithubReleaseResponse
+    internal class GithubRelease
     {
         public string? Url { get; set; }
         public string? HtmlUrl { get; set; }

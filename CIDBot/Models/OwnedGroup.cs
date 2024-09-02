@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetGroupInfoByIdResponseData
+    internal class OwnedGroup : IGroup
     {
         public ulong Id { get; set; }
         public string? Name { get; set; }

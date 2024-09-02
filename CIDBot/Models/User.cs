@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetUserInfoByUsernameResponseData
+    internal class User
     {
         public string? RequestedUsername { get; set; }
         public bool HasVerifiedBadge { get; set; }

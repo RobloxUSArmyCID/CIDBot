@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetUserFriendsResponseData
+    internal class Friend
     {
         public bool IsOnline { get; set; }
         public long PresenceType { get; set; }

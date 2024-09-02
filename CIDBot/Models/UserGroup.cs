@@ -1,8 +1,8 @@
 ﻿namespace CIDBot.Models
 {
-    internal class GetUserGroupsResponseData
+    internal class UserGroup
     {
-        public Group? Group { get; set; }
+        public PartialGroup? Group { get; set; }
         public GroupRole? Role { get; set; }
         public bool? IsNotificationsEnabled { get; set; }
     }

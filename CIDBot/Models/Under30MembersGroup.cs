@@ -1,6 +1,6 @@
 ﻿namespace CIDBot.Models
 {
-    internal class Under30MembersGroup : Group
+    internal class Under30MembersGroup : PartialGroup
     {
         public Under30MembersGroup(
             ulong id,
