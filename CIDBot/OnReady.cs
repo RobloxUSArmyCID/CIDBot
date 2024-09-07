@@ -1,7 +1,6 @@
 ﻿using CIDBot.Models;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using NuGet.Versioning;
 using Discord.Interactions;
@@ -49,12 +48,12 @@ namespace CIDBot
                 getLatestReleaseMsg.EnsureSuccessStatusCode();
                 var getLatestReleaseStr = await getLatestReleaseMsg.Content.ReadAsStringAsync();
 
-                var latestRelease = JsonSerializer.Deserialize<GithubRelease>(getLatestReleaseStr, GithubJsonOptions);
+                GithubRelease latestRelease = JsonSerializer.Deserialize<GithubRelease>(getLatestReleaseStr, GithubJsonOptions)!;
 
                 // I am NOT stripping the "v" because some library doesn't understand NAMING
                 // IF A DEVELOPER AFTER ME REMOVES THE "v" YOU WILL NOT COMPILE
                 // AND YOU HAVE A SMALL ONE
-                latestRelease!.TagName = latestRelease!.TagName![1..];
+                latestRelease.TagName = latestRelease!.TagName![1..];
                 IsOlderVersion = SemanticVersion.Parse(latestRelease!.TagName) > BotVersion;
 
                 await Client.SetActivityAsync(new CustomStatusGame("Background checking..."));
