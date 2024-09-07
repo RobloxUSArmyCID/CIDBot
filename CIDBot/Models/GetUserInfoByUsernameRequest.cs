@@ -2,7 +2,7 @@
 {
     internal class GetUserInfoByUsernameRequest
     {
-        public IList<string>? Usernames { get; set; }
-        public bool ExcludeBannedUsers { get; set; }
+        public required IList<string>? Usernames { get; set; }
+        public required bool ExcludeBannedUsers { get; set; }
     }
 }

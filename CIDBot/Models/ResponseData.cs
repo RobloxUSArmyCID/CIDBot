@@ -5,6 +5,6 @@
         public string? PreviousPageCursor { get; set; }
         public string? NextPageCursor { get; set; }
 
-        public IList<T>? Data { get; set; }
+        public required IList<T> Data { get; set; }
     }
 }

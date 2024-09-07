@@ -2,9 +2,9 @@
 {
     internal class AvatarHeadshot
     {
-        public ulong TargetId { get; set; }
-        public string? State { get; set; }
-        public string? ImageUrl { get; set; }
-        public string? Version { get; set; }
+        public required ulong TargetId { get; set; }
+        public required string State { get; set; }
+        public required string ImageUrl { get; set; }
+        public required string Version { get; set; }
     }
 }

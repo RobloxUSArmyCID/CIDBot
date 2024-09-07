@@ -2,10 +2,10 @@
 {
     internal class User
     {
-        public string? RequestedUsername { get; set; }
-        public bool HasVerifiedBadge { get; set; }
-        public ulong Id { get; set; }
-        public string? Name { get; set; }
-        public string? DisplayName { get; set; }
+        public required string RequestedUsername { get; set; }
+        public required bool HasVerifiedBadge { get; set; }
+        public required ulong Id { get; set; }
+        public required string Name { get; set; }
+        public required string DisplayName { get; set; }
     }
 }

@@ -2,6 +2,6 @@
 {
     internal class FriendsCount
     {
-        public int Count { get; set; }
+        public required int Count { get; set; }
     }
 }

@@ -2,18 +2,18 @@
 {
     internal class GithubReleaseAsset
     {
-        public string? Url { get; set; }
-        public string? BrowserDownloadUrl { get; set; }
-        public ulong Id { get; set; }
-        public string? NodeId { get; set; }
-        public string? Name { get; set; }
-        public string? Label { get; set; }
-        public string? State { get; set; }
-        public string? ContentType { get; set; }
-        public ulong Size { get; set; }
-        public ulong DownloadCount { get; set; }
-        public DateTime? CreatedAt { get; set; }
-        public DateTime? UploadedAt { get; set; }
-        public GithubReleaseAuthor? Uploader { get; set; }
+        public required string Url { get; set; }
+        public required string BrowserDownloadUrl { get; set; }
+        public required ulong Id { get; set; }
+        public required string NodeId { get; set; }
+        public required string Name { get; set; }
+        public required string Label { get; set; }
+        public required string State { get; set; }
+        public required string ContentType { get; set; }
+        public required ulong Size { get; set; }
+        public required ulong DownloadCount { get; set; }
+        public required DateTime CreatedAt { get; set; }
+        public required DateTime UploadedAt { get; set; }
+        public required GithubReleaseAuthor Uploader { get; set; }
     }
 }

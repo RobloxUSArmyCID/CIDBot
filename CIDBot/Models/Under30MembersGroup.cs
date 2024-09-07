@@ -9,7 +9,7 @@
         string ownerUsername) : IGroup
     {
         public ulong Id { get; private set; } = id;
-        public string? Name { get; private set; } = name;
+        public string Name { get; private set; } = name;
         public bool HasVerifiedBadge { get; private set; } = hasVerifiedBadge;
         public ulong OwnerId { get; set; } = ownerId;
         public string OwnerUsername { get; set; } = ownerUsername;

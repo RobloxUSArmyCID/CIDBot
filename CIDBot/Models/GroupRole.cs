@@ -2,8 +2,8 @@
 {
     internal class GroupRole
     {
-        public ulong Id { get; set; }
-        public string? Name { get; set; }
-        public int Rank { get; set; }
+        public required ulong Id { get; set; }
+        public required string Name { get; set; }
+        public required int Rank { get; set; }
     }
 }

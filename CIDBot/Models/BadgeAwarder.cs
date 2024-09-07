@@ -1,9 +1,9 @@
 ﻿namespace CIDBot.Models
 {
-    internal class BadgeAwarder
+    internal class BadgeAwarder : IUser
     {
-        public ulong Id { get; set; }
-        public string? Type { get; set; }
-        public string? Name { get; set; }
+        public required ulong Id { get; set; }
+        public required string Type { get; set; }
+        public required string Name { get; set; }
     }
 }
