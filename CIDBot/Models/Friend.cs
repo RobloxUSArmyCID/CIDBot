@@ -13,7 +13,7 @@
         public bool IsBanned { get; set; }
         public string? ExternalAppDisplayName { get; set; }
         public ulong Id { get; set; }
-        public string? Name { get; set; }
-        public string? DisplayName { get; set; }
+        public required string Name { get; set; }
+        public required string DisplayName { get; set; }
     }
 }
