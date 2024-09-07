@@ -1,24 +1,17 @@
 ﻿namespace CIDBot.Models
 {
-    internal class Under30MembersGroup : PartialGroup
-    {
-        public Under30MembersGroup(
-            ulong id,
-            string name,
-            ulong memberCount,
-            bool hasVerifiedBadge,
-            ulong ownerId,
-            string ownerUsername)
-        {
-            Id = id;
-            Name = name;
-            MemberCount = memberCount;
-            HasVerifiedBadge = hasVerifiedBadge;
-            OwnerId = ownerId;
-            OwnerUsername = ownerUsername;
-        }
+    internal class Under30MembersGroup(
+        ulong id,
+        string name,
 
-        public ulong OwnerId { get; set; }
-        public string OwnerUsername { get; set; }
+        bool hasVerifiedBadge,
+        ulong ownerId,
+        string ownerUsername) : IGroup
+    {
+        public ulong Id { get; private set; } = id;
+        public string? Name { get; private set; } = name;
+        public bool HasVerifiedBadge { get; private set; } = hasVerifiedBadge;
+        public ulong OwnerId { get; set; } = ownerId;
+        public string OwnerUsername { get; set; } = ownerUsername;
     }
 }
