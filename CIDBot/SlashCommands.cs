@@ -51,9 +51,12 @@ namespace CIDBot
 
         readonly static NormalizedLevenshtein _levenshtein = new();
 
+        bool NewVersionAvailable = false;
+
         public override async Task BeforeExecuteAsync(ICommandInfo command)
         {
             await _onReady.ReadyTaskCompletionSource.Task;
+            NewVersionAvailable = _onReady.IsOlderVersion;
         }
 
         public async Task SlashCommandErrored(Exception ex)
@@ -92,9 +95,8 @@ namespace CIDBot
             {
                 
                 await DeferAsync();
-                bool newVersionAvailable = _onReady.IsOlderVersion;
 
-                if (newVersionAvailable)
+                if (NewVersionAvailable)
                 {
                     await FollowupAsync(NEW_VERSION_AVAILABLE_UPDATE);
                     return;
@@ -123,16 +125,43 @@ namespace CIDBot
                     return;
                 }
 
+
+
                 // Both cannot be null but are set to nullable for compiler purposes.
                 ulong userId = userInfo!.Data!.First().Id;
                 username = userInfo!.Data!.First().Name!;
 
-                var groupsResponseMessage = await GroupsClient.GetAsync($"/v2/users/{userId}/groups/roles?includeLocked=true&includeNotificationPreferences=false");
-                groupsResponseMessage.EnsureSuccessStatusCode();
-                var groupsResponseStr = await groupsResponseMessage.Content.ReadAsStringAsync();
+                var concurrentTasks = new[]
+                {
+                    GroupsClient.GetAsync($"/v2/users/{userId}/groups/roles?includeLocked=true&includeNotificationPreferences=false"),
+                    BadgesClient.GetAsync($"/v1/users/{userId}/badges?limit=100"),
+                    UsersClient.GetAsync($"/v1/users/{userId}"),
+                    FriendsClient.GetAsync($"/v1/users/{userId}/friends/count"),
+                    ThumbnailsClient.GetAsync($"/v1/users/avatar-headshot?userIds={userId}&size=150x150&format=Webp&isCircular=false"),
+                    FriendsClient.GetAsync($"/v1/users/{userId}/friends"),
+                };
 
-                var groupsResponse = JsonSerializer.Deserialize<ResponseData<UserGroup>>(groupsResponseStr, RobloxJsonOptions);
-                int groupAmount = groupsResponse!.Data!.Count;
+                var completedTasks = await Task.WhenAll(concurrentTasks);
+
+                foreach (var task in completedTasks)
+                {
+                    task.EnsureSuccessStatusCode();
+                }
+
+                var groupsResponse = completedTasks[0];
+                var groupsResponseStr = await groupsResponse.Content.ReadAsStringAsync();
+
+                var first100BadgesMsg = completedTasks[1];
+                string first100BadgesStr = await first100BadgesMsg.Content.ReadAsStringAsync();
+
+                var userInfoByIdMsg = completedTasks[2];
+                string userInfoByIdStr = await userInfoByIdMsg.Content.ReadAsStringAsync();
+
+                var friendsCountMsg = completedTasks[3];
+                string friendsCountStr = await friendsCountMsg.Content.ReadAsStringAsync();
+
+                var groups = JsonSerializer.Deserialize<ResponseData<UserGroup>>(groupsResponseStr, RobloxJsonOptions)!;
+                int groupAmount = groups.Data.Count;
 
                 const ulong USAR_GROUP_ID = 3108077;
                 const int THIRTY_REQUIRED_MEMBERS = 30;
@@ -194,9 +223,6 @@ namespace CIDBot
                 bool has200OrMoreBadges = false;
                 int badges = 0;
 
-                var first100BadgesMsg = await BadgesClient.GetAsync($"/v1/users/{userId}/badges?limit=100");
-                first100BadgesMsg.EnsureSuccessStatusCode();
-                string first100BadgesStr = await first100BadgesMsg.Content.ReadAsStringAsync();
 
                 var first100Badges = JsonSerializer.Deserialize<ResponseData<Badge>>(first100BadgesStr, RobloxJsonOptions);
 
@@ -252,10 +278,6 @@ namespace CIDBot
                     else pastUsernamesNextPageCursor = pastUsernamesJson.NextPageCursor;
                 }
 
-                var userInfoByIdMsg = await UsersClient.GetAsync($"/v1/users/{userId}");
-                userInfoByIdMsg.EnsureSuccessStatusCode();
-                string userInfoByIdStr = await userInfoByIdMsg.Content.ReadAsStringAsync();
-
                 var userInfoById = JsonSerializer.Deserialize<User>(userInfoByIdStr, RobloxJsonOptions);
 
                 var createdDateTime = userInfoById!.Created;
@@ -263,21 +285,17 @@ namespace CIDBot
                 
                 int daysFromCreated = todayToCreatedSpan.Days;
 
-                var friendsCountMsg = await FriendsClient.GetAsync($"/v1/users/{userId}/friends/count");
-                friendsCountMsg.EnsureSuccessStatusCode();
-                string friendsCountStr = await friendsCountMsg.Content.ReadAsStringAsync();
-
                 var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, RobloxJsonOptions);
                 int amountOfFriends = friendsCount!.Count;
 
-                var avatarHeadshotMsg = await ThumbnailsClient.GetAsync($"/v1/users/avatar-headshot?userIds={userId}&size=150x150&format=Webp&isCircular=false");
+                var avatarHeadshotMsg = await ;
                 avatarHeadshotMsg.EnsureSuccessStatusCode();
                 string avatarHeadshotStr = await avatarHeadshotMsg.Content.ReadAsStringAsync();
 
                 var avatarHeadshot = JsonSerializer.Deserialize<ResponseData<AvatarHeadshot>>(avatarHeadshotStr, RobloxJsonOptions);
                 string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
 
-                var userFriendsMsg = await FriendsClient.GetAsync($"/v1/users/{userId}/friends");
+                var userFriendsMsg = await ;
                 userFriendsMsg.EnsureSuccessStatusCode();
                 string userFriendsStr = await userFriendsMsg.Content.ReadAsStringAsync();
 
@@ -438,8 +456,8 @@ namespace CIDBot
             {
                 await DeferAsync();
                 Console.WriteLine("setup command started");
-                bool newerVersionAvailable = await IsNewBotVersionAvailable();
-                if (newerVersionAvailable) 
+
+                if (NewVersionAvailable) 
                 {
                     await FollowupAsync(NEW_VERSION_AVAILABLE_UPDATE);
                     return;
