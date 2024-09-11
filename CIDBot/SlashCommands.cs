@@ -256,8 +256,8 @@ namespace CIDBot
                     next100BadgesMsg.EnsureSuccessStatusCode();
                     string next100BadgesStr = await next100BadgesMsg.Content.ReadAsStringAsync();
 
-                    var next100Badges = JsonSerializer.Deserialize<ResponseData<Badge>>(next100BadgesStr, RobloxJsonOptions);
-                    if (next100Badges!.Data!.Count != 100)
+                    var next100Badges = (JsonSerializer.Deserialize(next100BadgesStr, typeof(ResponseData<Badge>), RobloxJsonOptions) as ResponseData<Badge>)!;
+                    if (next100Badges.Data.Count != 100)
                     {
                         badges = next100Badges.Data.Count + 100;
                     }
@@ -286,11 +286,11 @@ namespace CIDBot
                     getPastUsernamesMsg.EnsureSuccessStatusCode();
                     string getPastUsernamesStr = await getPastUsernamesMsg.Content.ReadAsStringAsync();
 
-                    var pastUsernamesJson = JsonSerializer.Deserialize<ResponseData<PastUsername>>(getPastUsernamesStr, RobloxJsonOptions);
+                    var pastUsernamesJson = (JsonSerializer.Deserialize(getPastUsernamesStr, typeof(ResponseData<PastUsername>), RobloxJsonOptions) as ResponseData<PastUsername>)!;
 
-                    foreach (var pastUsername in pastUsernamesJson!.Data!)
+                    foreach (var pastUsername in pastUsernamesJson.Data)
                     {
-                        pastUsernames.Add(pastUsername.Name!);
+                        pastUsernames.Add(pastUsername.Name);
                     }
 
                     if (pastUsernamesJson.NextPageCursor is null) break;
