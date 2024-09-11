@@ -4,6 +4,6 @@
     {
         public required ulong Id { get; set; }
         public required string Type { get; set; }
-        public required string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

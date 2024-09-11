@@ -8,7 +8,7 @@
         public required string ExternalAppDisplayName { get; set; }
         public required bool HasVerifiedBadge { get; set; }
         public required ulong Id { get; set; }
-        public required string Name { get; set; }
+        public string? Name { get; set; }
         public required string DisplayName { get; set; }
     }
 }

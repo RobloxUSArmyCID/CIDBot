@@ -12,8 +12,8 @@
         public required string ContentType { get; set; }
         public required ulong Size { get; set; }
         public required ulong DownloadCount { get; set; }
-        public required DateTime CreatedAt { get; set; }
-        public required DateTime UploadedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public DateTime? UploadedAt { get; set; }
         public required GithubReleaseAuthor Uploader { get; set; }
     }
 }

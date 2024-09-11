@@ -117,19 +117,19 @@ namespace CIDBot
                 var userInfoByUsernameResponseStr = await userInfoByUsernameResponseMessage.Content.ReadAsStringAsync();
 
                 var userInfo = JsonSerializer.Deserialize<ResponseData<RequestedUser>>
-                    (userInfoByUsernameResponseStr, RobloxJsonOptions);
+                    (userInfoByUsernameResponseStr, RobloxJsonOptions) ?? throw new InvalidOperationException("The data for getting the user's ID is null.");
+                
 
-                if (userInfo!.Data!.Count == 0)
+                if (userInfo.Data.Count == 0)
                 {
                     await NoUsernameFoundAsync(username);
                     return;
                 }
 
 
-
                 // Both cannot be null but are set to nullable for compiler purposes.
-                ulong userId = userInfo!.Data!.First().Id;
-                username = userInfo!.Data!.First().Name!;
+                ulong userId = userInfo.Data.First().Id;
+                username = userInfo.Data.First().Name!;
 
                 var concurrentTasks = new[]
                 {
@@ -148,19 +148,52 @@ namespace CIDBot
                     task.EnsureSuccessStatusCode();
                 }
 
-                var groupsResponse = completedTasks[0];
-                var groupsResponseStr = await groupsResponse.Content.ReadAsStringAsync();
+                var responses = new List<string>();
 
-                var first100BadgesMsg = completedTasks[1];
-                string first100BadgesStr = await first100BadgesMsg.Content.ReadAsStringAsync();
+                completedTasks
+                    .ToList()
+                    .ForEach(async (response) => 
+                    {
+                        responses.Add(await response.Content.ReadAsStringAsync());
+                    });
+                
+                var deserializationClasses = new[] 
+                {
+                    typeof(ResponseData<UserGroup>),
+                    typeof(ResponseData<Badge>),
+                    typeof(User),
+                    typeof(FriendsCount),
+                    typeof(ResponseData<AvatarHeadshot>),
+                    typeof(ResponseData<Friend>)
+                };
 
-                var userInfoByIdMsg = completedTasks[2];
-                string userInfoByIdStr = await userInfoByIdMsg.Content.ReadAsStringAsync();
+                List<object> deserializedResponses = [];
 
-                var friendsCountMsg = completedTasks[3];
-                string friendsCountStr = await friendsCountMsg.Content.ReadAsStringAsync();
+                for (int i = 0; i < responses.Count; i++) 
+                {
+                    object? response = null;
+                    Console.WriteLine(responses[i]);
+                    try 
+                    {
+                        response = JsonSerializer.Deserialize(responses[i], deserializationClasses[i], RobloxJsonOptions);
+                    }
+                    catch (JsonException ex) 
+                    {
+                        Console.WriteLine(ex);
+                        return;
+                    }
+                    deserializedResponses.Add(response ?? throw new InvalidOperationException($"An API returned a null object."));
+                }
 
-                var groups = JsonSerializer.Deserialize<ResponseData<UserGroup>>(groupsResponseStr, RobloxJsonOptions)!;
+
+                // these are already null-checked, we can safely apply the null forgiving operator
+                var groups = (deserializedResponses[0] as ResponseData<UserGroup>)!;
+                var first100Badges = (deserializedResponses[1] as ResponseData<Badge>)!;
+                var userInfoById = (deserializedResponses[2] as User)!;
+                var friendsCount = (deserializedResponses[3] as FriendsCount)!;
+                var avatarHeadshot = (deserializedResponses[4] as ResponseData<AvatarHeadshot>)!;
+                var friends = (deserializedResponses[5] as ResponseData<Friend>)!;
+        
                 int groupAmount = groups.Data.Count;
 
                 const ulong USAR_GROUP_ID = 3108077;
@@ -171,62 +204,48 @@ namespace CIDBot
 
                 bool isInUsar = false;
                 bool isE1 = false;
-                string usarRank = String.Empty;
+                string usarRank = string.Empty;
 
-                foreach (var data in groupsResponse.Data)
+                foreach (var group in groups.Data)
                 {
-                    if (data.Group!.MemberCount <= THIRTY_REQUIRED_MEMBERS)
+                    if (group.Group.MemberCount <= THIRTY_REQUIRED_MEMBERS)
                     {
-                        var getGroupInfoMsg = await GroupsClient.GetAsync($"v2/groups?groupIds={data.Group!.Id}");
+                        var getGroupInfoMsg = await GroupsClient.GetAsync($"v2/groups?groupIds={group.Group!.Id}");
                         getGroupInfoMsg.EnsureSuccessStatusCode();
                         string getGroupInfoStr = await getGroupInfoMsg.Content.ReadAsStringAsync();
 
-                        var groupInfo = JsonSerializer.Deserialize<ResponseData<Group>>(getGroupInfoStr, RobloxJsonOptions);
+                        var groupInfo = (JsonSerializer.Deserialize(getGroupInfoStr, typeof(ResponseData<Group>), RobloxJsonOptions) as ResponseData<Group>)!;
 
-                        // group owners can be null
-                        // wtf roblox
-                        // skips groups without owners to not fuck shit up
-                        if (groupInfo!.Data!.First()!.Owner is null) continue;
-                        ulong ownerId = groupInfo!.Data!.First()!.Owner!.Id;
+                        var groupOwner = groupInfo.Data.First().Owner;
+                        if (groupOwner is null) continue;
 
-                        var getOwnerInfoMsg = await UsersClient.GetAsync($"/v1/users/{ownerId}");
-                        getOwnerInfoMsg.EnsureSuccessStatusCode();
-                        string getOwnerInfoStr = await getOwnerInfoMsg.Content.ReadAsStringAsync();
-
-                        var ownerInfo = JsonSerializer.Deserialize<User>
-                            (getOwnerInfoStr, RobloxJsonOptions);
-
-                        string ownerUsername = ownerInfo!.Name!;
+                        ulong ownerId = groupOwner.Id;
 
                         groupsUnder30Members.Add(
                             new(
-                                id: data.Group!.Id,
-                                name: data.Group!.Name!,
-                                memberCount: data.Group!.MemberCount,
-                                hasVerifiedBadge: data.Group!.HasVerifiedBadge,
-                                ownerId: ownerId,
-                                ownerUsername: ownerUsername
+                                id: group.Group.Id,
+                                name: group.Group.Name,
+                                memberCount: group.Group.MemberCount,
+                                hasVerifiedBadge: group.Group.HasVerifiedBadge,
+                                ownerId: ownerId
                             )
                         );
-                        //Skips checking if the under 30 members group is USAR. (0.01ms improvement :skull:)
+                        
                         continue;
                     }
 
-                    if (data.Group!.Id == USAR_GROUP_ID)
+                    if (group.Group!.Id == USAR_GROUP_ID)
                     {
                         isInUsar = true;
-                        isE1 = data.Role!.Rank == USAR_E1_RANK;
-                        usarRank = data.Role!.Name!;
+                        isE1 = group.Role.Rank == USAR_E1_RANK;
+                        usarRank = group.Role.Name;
                     }
                 }
 
                 bool has200OrMoreBadges = false;
                 int badges = 0;
 
-
-                var first100Badges = JsonSerializer.Deserialize<ResponseData<Badge>>(first100BadgesStr, RobloxJsonOptions);
-
-                if (first100Badges!.NextPageCursor is null)
+                if (first100Badges.NextPageCursor is null)
                 {
                     badges = first100Badges!.Data!.Count;
                 }
@@ -278,33 +297,21 @@ namespace CIDBot
                     else pastUsernamesNextPageCursor = pastUsernamesJson.NextPageCursor;
                 }
 
-                var userInfoById = JsonSerializer.Deserialize<User>(userInfoByIdStr, RobloxJsonOptions);
 
-                var createdDateTime = userInfoById!.Created;
+                var createdDateTime = userInfoById.Created;
                 var todayToCreatedSpan = DateTime.Now - createdDateTime;
                 
                 int daysFromCreated = todayToCreatedSpan.Days;
 
-                var friendsCount = JsonSerializer.Deserialize<FriendsCount>(friendsCountStr, RobloxJsonOptions);
-                int amountOfFriends = friendsCount!.Count;
+                int amountOfFriends = friendsCount.Count;
 
-                var avatarHeadshotMsg = await ;
-                avatarHeadshotMsg.EnsureSuccessStatusCode();
-                string avatarHeadshotStr = await avatarHeadshotMsg.Content.ReadAsStringAsync();
+                string thumbnailUrl = avatarHeadshot.Data.First().ImageUrl;
 
-                var avatarHeadshot = JsonSerializer.Deserialize<ResponseData<AvatarHeadshot>>(avatarHeadshotStr, RobloxJsonOptions);
-                string thumbnailUrl = avatarHeadshot!.Data!.First()!.ImageUrl!;
-
-                var userFriendsMsg = await ;
-                userFriendsMsg.EnsureSuccessStatusCode();
-                string userFriendsStr = await userFriendsMsg.Content.ReadAsStringAsync();
-
-                var userFriends = JsonSerializer.Deserialize<ResponseData<Friend>>(userFriendsStr, RobloxJsonOptions);
 
                 // CLOSER TO 1 - THE LESS SIMILAR
                 // CLOSER TO 0 - THE MORE SIMILAR
                 // 0.72 WAS PICKED ALONGSIDE CID HICOM DUE TO THE ALGORITHM
-                List<string> usernamesOfSuspiciousFriends = userFriends!.Data!.Where(friend =>
+                List<string?> usernamesOfSuspiciousFriends = friends.Data.Where(friend =>
                 {
                     return _levenshtein.Distance(friend.Name, username) <= 0.72;
                 })
@@ -365,7 +372,7 @@ namespace CIDBot
                 if (groupsUnder30Members.Count > 0)
                 {
                     groupsUnder30Members.ForEach(
-                        group => descriptionBuilder.AppendLine($"- ⚠ Suspicious group: {group.Name} ({group.MemberCount} member{(group.MemberCount != 1 ? "s" : "")}) - owned by {group.OwnerUsername} ⚠"));
+                        group => descriptionBuilder.AppendLine($"- ⚠ Suspicious group: {group.Name} ({group.MemberCount} member{(group.MemberCount != 1 ? "s" : "")}) ⚠"));
                 }
 
                 if (pastUsernames.Count > 0)

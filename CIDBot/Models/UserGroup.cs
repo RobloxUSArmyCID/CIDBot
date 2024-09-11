@@ -4,6 +4,6 @@
     {
         public required PartialGroup Group { get; set; }
         public required GroupRole Role { get; set; }
-        public required bool IsNotificationsEnabled { get; set; }
+        public bool? IsNotificationsEnabled { get; set; }
     }
 }

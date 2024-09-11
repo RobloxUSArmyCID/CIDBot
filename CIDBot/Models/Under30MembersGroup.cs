@@ -5,14 +5,12 @@
         string name,
         ulong memberCount,
         bool hasVerifiedBadge,
-        ulong ownerId,
-        string ownerUsername) : IGroup
+        ulong ownerId) : IGroup
     {
         public ulong Id { get; private set; } = id;
         public string Name { get; private set; } = name;
         public ulong MemberCount { get; private set; } = memberCount;
         public bool HasVerifiedBadge { get; private set; } = hasVerifiedBadge;
         public ulong OwnerId { get; set; } = ownerId;
-        public string OwnerUsername { get; set; } = ownerUsername;
     }
 }
