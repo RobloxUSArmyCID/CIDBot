@@ -172,7 +172,6 @@ namespace CIDBot
                 for (int i = 0; i < responses.Count; i++) 
                 {
                     object? response = null;
-                    Console.WriteLine(responses[i]);
                     try 
                     {
                         response = JsonSerializer.Deserialize(responses[i], deserializationClasses[i], RobloxJsonOptions);
