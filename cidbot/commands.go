@@ -65,8 +65,6 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 	var groupsUnder30Members []*Group
 
 	for _, group := range groups {
-		
-
 		if group.Group.MemberCount <= THIRTY_REQUIRED_MEMBERS {
 			groupsUnder30Members = append(groupsUnder30Members, group)
 		}
