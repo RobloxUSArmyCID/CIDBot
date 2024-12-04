@@ -58,7 +58,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		return
 	}
 
-	doConcurrentCalls(user.ID)
+	doUserInfoCalls(user.ID)
 
 	usarRank := ""
 	isE1 := false
@@ -77,7 +77,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 	}
 }
 
-func doConcurrentCalls(userID uint64) {
+func doUserInfoCalls(userID uint64) {
 	concurrentCalls := errgroup.Group{}
 
 	concurrentCalls.Go(func() error {
