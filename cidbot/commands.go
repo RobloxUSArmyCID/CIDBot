@@ -74,6 +74,8 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 			isE1 = group.Role.Rank == USAR_E1_RANK
 		}
 	}
+
+	
 }
 
 func doUserInfoCalls(userID uint64) {
