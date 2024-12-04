@@ -23,6 +23,10 @@ type GetUserRequest struct {
 	ExcludeBannedUsers bool     `json:"excludeBannedUsers"`
 }
 
+type PastUsername struct {
+	Name string `json:"name"`
+}
+
 func GetUserInfoByUsername(name string) (*User, error) {
 	requestUrl := "https://users.roblox.com/v1/usernames/users"
 
@@ -68,4 +72,18 @@ func GetUserInfoByUsername(name string) (*User, error) {
 func GetUserInfoByID(id uint64) (*User, error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", id)
 	return GetRequest[User](requestUrl)
+}
+
+func GetUserPastUsernames(userID uint64) (list []*string, err error) {
+	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d/username-history?limit=100")
+	response, err := GetRequest[ResponseData[PastUsername]](requestUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, username := range response.Data {
+		list = append(list, &username.Name)
+	}
+
+	return list, nil
 }

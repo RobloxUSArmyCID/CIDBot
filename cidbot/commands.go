@@ -33,18 +33,19 @@ func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOpti
 }
 
 var (
-	groups    []*Group
-	badges    []*Badge
-	friends   []*User
-	user      *User
-	thumbnail *string
+	groups        []*Group
+	badges        []*Badge
+	friends       []*User
+	user          *User
+	thumbnail     *string
+	pastUsernames []*string
 
 	mu sync.Mutex
 )
 
-const ( 
-	USAR_GROUP_ID = 3108077 
-	USAR_E1_RANK = 5
+const (
+	USAR_GROUP_ID           = 3108077
+	USAR_E1_RANK            = 5
 	THIRTY_REQUIRED_MEMBERS = 30
 )
 
@@ -74,8 +75,6 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 			isE1 = group.Role.Rank == USAR_E1_RANK
 		}
 	}
-
-	
 }
 
 func doUserInfoCalls(userID uint64) {
@@ -135,5 +134,16 @@ func doUserInfoCalls(userID uint64) {
 		mu.Unlock()
 		return nil
 	})
+	concurrentCalls.Go(func() error {
+		data, err := GetUserPastUsernames(userID)
+		if err != nil {
+			return err
+		}
+		mu.Lock()
+		pastUsernames = data
+		mu.Unlock()
+		return nil
+	})
+
 	concurrentCalls.Wait()
 }
