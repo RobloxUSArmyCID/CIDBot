@@ -26,7 +26,7 @@ func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.Inte
 	case "bgcheck":
 		BackgroundCheckCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
 	default:
-		log.Fatalf("invalid command \"%s\" selected", data.Name)
+		log.Printf("invalid command \"%s\" selected", data.Name)
 	}
 
 }

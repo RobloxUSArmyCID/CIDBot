@@ -11,25 +11,26 @@ import (
 func InteractionFailed(session *discordgo.Session, interaction *discordgo.Interaction, content string, err error) error {
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
-			Name: interaction.Member.User.Username,
-			//IconURL: interaction.User.AvatarURL(""),
+			Name:    interaction.Member.User.Username,
+			IconURL: interaction.Member.User.AvatarURL(""),
 		},
 		Title:       ":x: | An error occurred!",
 		Description: fmt.Sprintf("Error contents:\n```%s: %s```", content, err),
-		Timestamp:   time.Now().String(),
+		Timestamp:   time.Now().Format(time.RFC3339),
+		Color:       0x8b0000,
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: "If you believe this is an error, contact the Investigatory Director.",
 		},
 	}
 
-	return session.InteractionRespond(interaction, &discordgo.InteractionResponse{
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				embed,
-			},
+	_, err = session.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+		Embeds: []*discordgo.MessageEmbed{
+			embed,
 		},
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
 	})
+
+	return err
+
 }
 
 func DeferInteraction(session *discordgo.Session, interaction *discordgo.Interaction) {

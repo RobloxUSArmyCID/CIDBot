@@ -1,9 +1,10 @@
 package cidbot
 
 import (
-	"io"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -18,17 +19,47 @@ func GetRequest[T any](url string) (*T, error) {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unsuccessful status code - %d", response.StatusCode)
+	responseBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
 	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unsuccessful status code - %d, content: %s", response.StatusCode, string(responseBytes))
+	}
+
+	var responseBody T
+
+	err = json.Unmarshal(responseBytes, &responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responseBody, nil
+}
+
+func PostRequest[T any](url string, data interface{}) (*T, error) {
+	requestBody, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
 
 	responseBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	var responseBody T
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unsuccessful status code - %d, content: %s", response.StatusCode, string(responseBytes))
+	}
 
+	var responseBody T
 	err = json.Unmarshal(responseBytes, &responseBody)
 	if err != nil {
 		return nil, err

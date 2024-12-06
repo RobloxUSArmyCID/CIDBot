@@ -1,12 +1,7 @@
 package cidbot
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 )
 
@@ -14,12 +9,17 @@ type User struct {
 	Name string `json:"name"`
 	ID   uint64 `json:"id"`
 
-	// Is not given with GetUserInfoByUsername
+	// Is not given with GetUserInfoByUsername or GetUserInfoByID
 	Created time.Time `json:"created"`
 }
 
-type GetUserRequest struct {
+type GetUsersByUsernameRequest struct {
 	Usernames          []string `json:"usernames"`
+	ExcludeBannedUsers bool     `json:"excludeBannedUsers"`
+}
+
+type GetUsersByIDRequest struct {
+	UserIDs            []uint64 `json:"userIds"`
 	ExcludeBannedUsers bool     `json:"excludeBannedUsers"`
 }
 
@@ -27,62 +27,52 @@ type PastUsername struct {
 	Name string `json:"name"`
 }
 
-func GetUserInfoByUsername(name string) (*User, error) {
+func GetUsersByUsername(name string) ([]*User, error) {
 	requestUrl := "https://users.roblox.com/v1/usernames/users"
 
-	requestData := GetUserRequest{
+	requestData := GetUsersByUsernameRequest{
 		Usernames:          []string{name},
 		ExcludeBannedUsers: true,
 	}
 
-	requestBody, err := json.Marshal(requestData)
+	response, err := PostRequest[ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := http.Post(requestUrl, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		return nil, err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unsuccessful status code - %d", response.StatusCode)
-	}
-
-	responseBytes, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var responseBody ResponseData[*User]
-
-	err = json.Unmarshal(responseBytes, &responseBody)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(responseBody.Data) == 0 {
-		return nil, errors.New("roblox did not return a user")
-	}
-
-	return responseBody.Data[0], nil
+	return response.Data, err
 }
 
-func GetUserInfoByID(id uint64) (*User, error) {
+func GetUsersByID(ids []uint64) ([]*User, error) {
+	requestUrl := "https://users.roblox.com/v1/users"
+
+	requestData := GetUsersByIDRequest{
+		UserIDs:            ids,
+		ExcludeBannedUsers: true,
+	}
+
+	response, err := PostRequest[ResponseData[*User]](requestUrl, requestData)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data, err
+}
+
+func GetUserByID(id uint64) (*User, error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", id)
 	return GetRequest[User](requestUrl)
 }
 
-func GetUserPastUsernames(userID uint64) (list []*string, err error) {
-	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d/username-history?limit=100")
+func GetUserPastUsernames(userID uint64) (list []string, err error) {
+	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d/username-history?limit=100", userID)
 	response, err := GetRequest[ResponseData[PastUsername]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, username := range response.Data {
-		list = append(list, &username.Name)
+		list = append(list, username.Name)
 	}
 
 	return list, nil

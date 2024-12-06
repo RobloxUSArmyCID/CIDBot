@@ -22,7 +22,7 @@ type role struct {
 }
 
 func GetUserGroups(userID uint64) ([]*Group, error) {
-	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", userID)
+	requestUrl := fmt.Sprintf("https://groups.roblox.com/v2/users/%d/groups/roles", userID)
 	response, err := GetRequest[ResponseData[*Group]](requestUrl)
 	if err != nil {
 		return nil, err
