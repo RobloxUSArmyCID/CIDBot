@@ -7,7 +7,12 @@ import (
 )
 
 func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
-	_, err := session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, "", Commands)
+	err := session.UpdateCustomStatus("Background checking...")
+	if err != nil {
+		log.Fatalf("could not set custom status: %s", err)
+	}
+	
+	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, "", Commands)
 
 	if err != nil {
 		log.Fatalf("could not register commands: %s", err)
