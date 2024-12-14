@@ -44,7 +44,6 @@ var (
 	friends       []*roblox.User
 	user          *roblox.User
 	thumbnail     *string
-	pastUsernames []string
 
 	mu sync.Mutex
 )
@@ -60,6 +59,7 @@ const (
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	username := options["username"].StringValue()
 
+	limiter.Wait(context.Background())
 	temp_user, err := roblox.GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
 		InteractionFailed(session, interaction, "no such user exists", err)
@@ -110,7 +110,6 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 	amountOfFriends := len(friends)
 	amountOfBadges := len(badges)
 	amountOfGroups := len(groups)
-	amountOfPastUsernames := len(pastUsernames)
 	amountOfSuspiciousFriends := len(suspiciousFriends)
 
 	var descriptionBuilder strings.Builder
@@ -160,13 +159,11 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspected alts in friends list: %s\n", strings.Join(usernamesOfSuspiciousFriends, ", ")))
 	}
 
-	if amountOfPastUsernames > 0 {
-		descriptionBuilder.WriteString(fmt.Sprintf("• Past usernames: %s\n", strings.Join(pastUsernames, ", ")))
-	}
-
 	if descriptionBuilder.Len() == 0 {
 		descriptionBuilder.WriteString("+ No concerns found! (verify criteria not checked by the bot)\n")
 	}
+
+	descriptionBuilder.WriteString("Check past usernames!")
 
 	description := descriptionBuilder.String()
 
@@ -291,17 +288,6 @@ func doUserInfoCalls(userID uint64) error {
 		}
 		mu.Lock()
 		thumbnail = data
-		mu.Unlock()
-		return nil
-	})
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		data, err := roblox.GetUserPastUsernames(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		pastUsernames = data
 		mu.Unlock()
 		return nil
 	})
