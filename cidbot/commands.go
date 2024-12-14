@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RobloxUSArmyCID/CIDBot/roblox"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/sync/errgroup"
 )
@@ -36,10 +37,10 @@ func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOpti
 }
 
 var (
-	groups        []*Group
-	badges        []*Badge
-	friends       []*User
-	user          *User
+	groups        []*roblox.Group
+	badges        []*roblox.Badge
+	friends       []*roblox.User
+	user          *roblox.User
 	thumbnail     *string
 	pastUsernames []string
 
@@ -55,7 +56,7 @@ const (
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	username := options["username"].StringValue()
 
-	temp_user, err := GetUsersByUsernames([]string{username})
+	temp_user, err := roblox.GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
 		InteractionFailed(session, interaction, "no such user exists", err)
 		return
@@ -77,7 +78,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		friendsIDs = append(friendsIDs, friend.ID)
 	}
 
-	friendsWithNames, err := GetUsersByID(friendsIDs)
+	friendsWithNames, err := roblox.GetUsersByID(friendsIDs)
 	if err != nil {
 		InteractionFailed(session, interaction, "error happened when getting one of the user's friends' information", err)
 		return
@@ -85,7 +86,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	usarRank := "N/A"
 	isE1 := false
-	var groupsUnder30Members []*Group
+	var groupsUnder30Members []*roblox.Group
 
 	for _, group := range groups {
 		if group.Group.MemberCount <= THIRTY_REQUIRED_MEMBERS {
@@ -100,7 +101,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	daysFromAccountCreation := int(time.Since(user.Created).Hours() / 24)
 
-	suspiciousFriends := GetSuspiciousFriends(user, friendsWithNames)
+	suspiciousFriends := roblox.GetSuspiciousFriends(user, friendsWithNames)
 
 	amountOfFriends := len(friends)
 	amountOfBadges := len(badges)
@@ -231,7 +232,7 @@ func doUserInfoCalls(userID uint64) error {
 	concurrentCalls := errgroup.Group{}
 
 	concurrentCalls.Go(func() error {
-		data, err := GetUserByID(userID)
+		data, err := roblox.GetUserByID(userID)
 		if err != nil {
 			return err
 		}
@@ -242,7 +243,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
-		data, err := GetUserGroups(userID)
+		data, err := roblox.GetUserGroups(userID)
 		if err != nil {
 			return err
 		}
@@ -253,7 +254,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
-		data, err := GetUserBadges(userID)
+		data, err := roblox.GetUserBadges(userID)
 		if err != nil {
 			return err
 		}
@@ -264,7 +265,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
-		data, err := GetUserFriends(userID)
+		data, err := roblox.GetUserFriends(userID)
 		if err != nil {
 			return err
 		}
@@ -275,7 +276,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
-		data, err := GetUserThumbnail(userID)
+		data, err := roblox.GetUserThumbnail(userID)
 		if err != nil {
 			return err
 		}
@@ -285,7 +286,7 @@ func doUserInfoCalls(userID uint64) error {
 		return nil
 	})
 	concurrentCalls.Go(func() error {
-		data, err := GetUserPastUsernames(userID)
+		data, err := roblox.GetUserPastUsernames(userID)
 		if err != nil {
 			return err
 		}

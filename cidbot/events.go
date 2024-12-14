@@ -11,7 +11,7 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	if err != nil {
 		log.Fatalf("could not set custom status: %s", err)
 	}
-	
+
 	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, "", Commands)
 
 	if err != nil {

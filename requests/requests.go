@@ -1,4 +1,4 @@
-package cidbot
+package requests
 
 import (
 	"bytes"
