@@ -1,15 +1,16 @@
-package cidbot
+package roblox
 
 import (
 	"fmt"
 
+	"github.com/RobloxUSArmyCID/CIDBot/requests"
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
 )
 
 func GetUserFriends(userID uint64) ([]*User, error) {
 	requestUrl := fmt.Sprintf("https://friends.roblox.com/v1/users/%d/friends", userID)
-	response, err := GetRequest[ResponseData[*User]](requestUrl)
+	response, err := requests.GetRequest[requests.ResponseData[*User]](requestUrl)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,10 @@
-package cidbot
+package roblox
 
 import (
 	"fmt"
 	"time"
+
+	"github.com/RobloxUSArmyCID/CIDBot/requests"
 )
 
 type User struct {
@@ -35,7 +37,7 @@ func GetUsersByUsernames(names []string) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := PostRequest[ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +53,7 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := PostRequest[ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -61,12 +63,12 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 
 func GetUserByID(id uint64) (*User, error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", id)
-	return GetRequest[User](requestUrl)
+	return requests.GetRequest[User](requestUrl)
 }
 
 func GetUserPastUsernames(userID uint64) (list []string, err error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d/username-history?limit=100", userID)
-	response, err := GetRequest[ResponseData[PastUsername]](requestUrl)
+	response, err := requests.GetRequest[requests.ResponseData[PastUsername]](requestUrl)
 	if err != nil {
 		return nil, err
 	}

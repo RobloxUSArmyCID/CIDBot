@@ -1,7 +1,9 @@
-package cidbot
+package roblox
 
 import (
 	"fmt"
+
+	"github.com/RobloxUSArmyCID/CIDBot/requests"
 )
 
 type Group struct {
@@ -23,7 +25,7 @@ type role struct {
 
 func GetUserGroups(userID uint64) ([]*Group, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v2/users/%d/groups/roles", userID)
-	response, err := GetRequest[ResponseData[*Group]](requestUrl)
+	response, err := requests.GetRequest[requests.ResponseData[*Group]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
