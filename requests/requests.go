@@ -25,7 +25,7 @@ func GetRequest[T any](url string) (*T, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unsuccessful status code - %d, content: %s", response.StatusCode, string(responseBytes))
+		return nil, fmt.Errorf("unsuccessful status code - %d\n\ncontent: %s\n\nendpoint: %s\n\nheaders: %s", response.StatusCode, string(responseBytes), url, response.Header)
 	}
 
 	var responseBody T
@@ -56,7 +56,7 @@ func PostRequest[T any](url string, data interface{}) (*T, error) {
 	}
 
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unsuccessful status code - %d, content: %s", response.StatusCode, string(responseBytes))
+		return nil, fmt.Errorf("unsuccessful status code - %d\n\ncontent: %s\n\nendpoint: %s\n\nheaders: %s", response.StatusCode, string(responseBytes), url, response.Header)
 	}
 
 	var responseBody T

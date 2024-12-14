@@ -6,6 +6,7 @@ require (
 	github.com/adrg/strutil v0.3.1
 	github.com/bwmarrin/discordgo v0.28.1
 	golang.org/x/sync v0.10.0
+	golang.org/x/time v0.8.0
 )
 
 require (
