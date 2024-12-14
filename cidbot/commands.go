@@ -55,7 +55,7 @@ const (
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	username := options["username"].StringValue()
 
-	temp_user, err := GetUsersByUsername(username)
+	temp_user, err := GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
 		InteractionFailed(session, interaction, "no such user exists", err)
 		return

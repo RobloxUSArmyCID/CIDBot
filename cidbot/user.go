@@ -27,11 +27,11 @@ type PastUsername struct {
 	Name string `json:"name"`
 }
 
-func GetUsersByUsername(name string) ([]*User, error) {
+func GetUsersByUsernames(names []string) ([]*User, error) {
 	requestUrl := "https://users.roblox.com/v1/usernames/users"
 
 	requestData := GetUsersByUsernameRequest{
-		Usernames:          []string{name},
+		Usernames:          names,
 		ExcludeBannedUsers: true,
 	}
 
