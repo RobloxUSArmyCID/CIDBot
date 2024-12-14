@@ -9,7 +9,7 @@ import (
 var token = flag.String("token", "", "The bot's authentication token")
 var tokenPath = flag.String("token-path", "", "The path to a file containing the bot's authentication token")
 
-func parseToken() (*string, error) {
+func ParseToken() (*string, error) {
 	flag.Parse()
 
 	if *token == "" && *tokenPath == "" {
