@@ -1,6 +1,7 @@
 package cidbot
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -9,6 +10,7 @@ import (
 	"github.com/RobloxUSArmyCID/CIDBot/roblox"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/sync/errgroup"
+	"golang.org/x/time/rate"
 )
 
 type CommandOptions map[string]*discordgo.ApplicationCommandInteractionDataOption
@@ -46,6 +48,8 @@ var (
 
 	mu sync.Mutex
 )
+
+var limiter = rate.NewLimiter(10, 1)
 
 const (
 	USAR_GROUP_ID           = 3108077
@@ -232,6 +236,7 @@ func doUserInfoCalls(userID uint64) error {
 	concurrentCalls := errgroup.Group{}
 
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserByID(userID)
 		if err != nil {
 			return err
@@ -243,6 +248,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserGroups(userID)
 		if err != nil {
 			return err
@@ -254,6 +260,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserBadges(userID)
 		if err != nil {
 			return err
@@ -265,6 +272,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserFriends(userID)
 		if err != nil {
 			return err
@@ -276,6 +284,7 @@ func doUserInfoCalls(userID uint64) error {
 	})
 
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserThumbnail(userID)
 		if err != nil {
 			return err
@@ -286,6 +295,7 @@ func doUserInfoCalls(userID uint64) error {
 		return nil
 	})
 	concurrentCalls.Go(func() error {
+		limiter.Wait(context.Background())
 		data, err := roblox.GetUserPastUsernames(userID)
 		if err != nil {
 			return err

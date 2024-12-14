@@ -15,7 +15,7 @@ func handleInterrupt() {
 	<-sigint
 }
 
-func Init() {
+func main() {
 	log.Println("Launching...")
 	token, err := cidbot.ParseToken()
 	if err != nil {
