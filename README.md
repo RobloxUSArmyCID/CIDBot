@@ -39,6 +39,10 @@ chmod +x CIDBot-vX.X.X-os-arch
 - Press Ctrl/Cmd+C
 - Or close the terminal/PowerShell window.
 
+# FAQ
+* Is it any good?
+  * [Yes.](https://news.ycombinator.com/item?id=3067434)
+
 # Changing the token - instructions for CID HICOM
 1. Go to https://discord.com/developers/applications
 2. Select the CID Bot.
