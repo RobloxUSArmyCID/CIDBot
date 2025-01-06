@@ -60,7 +60,7 @@ make build # make clean build to clean out the bin/ folder beforehand
 - Release:
 ```bash
 cd <PATH_TO_SOURCE>
-make CIDBOT_VERSION=<VERSION> make clean release # do not use v for the version (ex. v2.0.0)
+make CIDBOT_VERSION=<VERSION> clean release # do not use v for the version (ex. v2.0.0)
 ```
 
 *Made with :heart:,
