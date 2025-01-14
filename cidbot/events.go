@@ -2,6 +2,7 @@ package cidbot
 
 import (
 	"log"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -21,6 +22,11 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	if err != nil {
 		log.Fatalf("could not register admin commands: %s", err)
 	}
+
+	_, err = os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatalf("couldn't create the whitelist file: %s", err)
+	}
 }
 
 func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
@@ -34,6 +40,8 @@ func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.Inte
 	switch data.Name {
 	case "bgcheck":
 		BackgroundCheckCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
+	case "whitelist":
+		WhitelistCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
 	default:
 		log.Printf("invalid command \"%s\" selected", data.Name)
 	}

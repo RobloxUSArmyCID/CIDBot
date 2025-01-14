@@ -2,6 +2,7 @@ package cidbot
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -75,7 +76,24 @@ const (
 	THIRTY_REQUIRED_MEMBERS = 30
 )
 
+// error constants
+var (
+	errUnauthorized = errors.New("you are unauthorized to run this command")
+)
+
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	whitelistBytes, err := os.ReadFile("./whitelist")
+	if err != nil {
+		InteractionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
+		return
+	}
+
+	whitelist := string(whitelistBytes)
+	if !strings.Contains(whitelist, interaction.User.ID) {
+		InteractionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
+		return
+	}
+
 	username := options["username"].StringValue()
 
 	limiter.Wait(context.Background())
@@ -252,19 +270,24 @@ func WhitelistCommand(session *discordgo.Session, interaction *discordgo.Interac
 	userID := options["user_id"].StringValue()
 	userIDBytes := []byte(userID)
 
-	_, err := session.User(userID)
+	user, err := session.User(userID)
 	if err != nil {
 		InteractionFailed(session, interaction, "user doesn't exist or another error has occured", err)
 	}
-
-	err = os.WriteFile("./whitelist", userIDBytes, os.ModeAppend)
+	file, err := os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		InteractionFailed(session, interaction, "could not add user to the whitelist file", err)
+		InteractionFailed(session, interaction, "couldn't open whitelist file", err)
+		return
+	}
+
+	_, err = file.Write(userIDBytes)
+	if err != nil {
+		InteractionFailed(session, interaction, "couldn't write the user ID to the whitelist file", err)
 		return
 	}
 
 	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
-		Content: "Succesfully added " + userID + " to the whitelist.",
+		Content: "Succesfully added " + user.Username + " to the whitelist.",
 	})
 }
 

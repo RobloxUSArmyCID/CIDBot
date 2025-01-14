@@ -24,7 +24,7 @@ func ParseConfig() (err error) {
 		return err
 	}
 
-	err = yaml.Unmarshal(fileContents, Configuration)
+	err = yaml.Unmarshal(fileContents, &Configuration)
 	if err != nil {
 		return err
 	}
