@@ -113,7 +113,7 @@ var (
 )
 
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
-	whitelistBytes, err := os.ReadFile("./whitelist")
+	whitelistBytes, err := os.ReadFile(Configuration.WhitelistPath)
 	if err != nil {
 		InteractionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
 		return
