@@ -3,6 +3,7 @@ package cidbot
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -245,6 +246,26 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		InteractionFailed(session, interaction, "could not send message", err)
 	}
 
+}
+
+func WhitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	userID := options["user_id"].StringValue()
+	userIDBytes := []byte(userID)
+
+	_, err := session.User(userID)
+	if err != nil {
+		InteractionFailed(session, interaction, "user doesn't exist or another error has occured", err)
+	}
+
+	err = os.WriteFile("./whitelist", userIDBytes, os.ModeAppend)
+	if err != nil {
+		InteractionFailed(session, interaction, "could not add user to the whitelist file", err)
+		return
+	}
+
+	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
+		Content: "Succesfully added " + userID + " to the whitelist.",
+	})
 }
 
 func doUserInfoCalls(userID uint64) error {
