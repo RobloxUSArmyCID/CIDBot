@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Token         string `yaml:"token"`
 	AdminServerID string `yaml:"admin_server_id"`
+	WhitelistPath string `yaml:"whitelist_path"`
 }
 
 var configPath = flag.String("config-path", "./config.yml", "The path to a file containing the bot's configuration")

@@ -1,2 +1,3 @@
 token: "INSERT TOKEN HERE"
 admin_server_id: "INSERT ADMIN SERVER ID HERE"
+whitelist_path: "INSERT WHITELIST PATH HERE"
