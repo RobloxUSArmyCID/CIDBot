@@ -14,18 +14,19 @@ type Config struct {
 
 var configPath = flag.String("config-path", "./config.yml", "The path to a file containing the bot's configuration")
 
-func ParseConfig() (*Config, error) {
+var Configuration *Config
+
+func ParseConfig() (err error) {
 	flag.Parse()
 
 	fileContents, err := os.ReadFile(*configPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	var config Config
-	err = yaml.Unmarshal(fileContents, config)
+	err = yaml.Unmarshal(fileContents, Configuration)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &config, nil
+	return nil
 }

@@ -13,9 +13,13 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	}
 
 	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, "", Commands)
-
 	if err != nil {
 		log.Fatalf("could not register commands: %s", err)
+	}
+
+	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, Configuration.AdminServerID, ServerCommands)
+	if err != nil {
+		log.Fatalf("could not register admin commands: %s", err)
 	}
 }
 

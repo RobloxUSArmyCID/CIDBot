@@ -30,6 +30,8 @@ var Commands = []*discordgo.ApplicationCommand{
 	},
 }
 
+var whitelistPermissions int64 = discordgo.PermissionAdministrator
+
 var ServerCommands = []*discordgo.ApplicationCommand{
 	{
 		Name:        "whitelist",
@@ -42,6 +44,7 @@ var ServerCommands = []*discordgo.ApplicationCommand{
 				Required:    true,
 			},
 		},
+		DefaultMemberPermissions: &whitelistPermissions,
 	},
 }
 

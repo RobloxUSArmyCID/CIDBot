@@ -15,14 +15,15 @@ func handleInterrupt() {
 	<-sigint
 }
 
+
 func main() {
 	log.Println("Launching...")
-	config, err := cidbot.ParseConfig()
-	if err != nil {
+	
+	if err := cidbot.ParseConfig(); err != nil {
 		log.Fatalf("could not parse config: %s", err)
 	}
 
-	discord, err := discordgo.New("Bot " + config.Token)
+	discord, err := discordgo.New("Bot " + cidbot.Configuration.Token)
 	if err != nil {
 		log.Fatalf("could not create discord session: %s", err)
 	}
