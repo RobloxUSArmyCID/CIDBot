@@ -17,6 +17,8 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	if err != nil {
 		log.Fatalf("could not register commands: %s", err)
 	}
+
+	_, err = session.Gu
 }
 
 func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {

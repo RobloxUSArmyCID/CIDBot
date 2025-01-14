@@ -17,28 +17,28 @@ func handleInterrupt() {
 
 func main() {
 	log.Println("Launching...")
-	token, err := cidbot.ParseToken()
+	config, err := cidbot.ParseConfig()
 	if err != nil {
-		log.Fatalf("could not parse token: %s", err)
+		log.Fatalf("could not parse config: %s", err)
 	}
 
-	dg, err := discordgo.New("Bot " + *token)
+	discord, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		log.Fatalf("could not create discord session: %s", err)
 	}
 
 	defer func() {
-		err := dg.Close()
+		err := discord.Close()
 		if err != nil {
 			log.Printf("couldn't close session gracefully: %s", err)
 		}
 	}()
 
-	dg.AddHandler(cidbot.OnReady)
+	discord.AddHandler(cidbot.OnReady)
 	log.Println("Ready")
-	dg.AddHandler(cidbot.OnInteractionCreate)
+	discord.AddHandler(cidbot.OnInteractionCreate)
 
-	err = dg.Open()
+	err = discord.Open()
 	if err != nil {
 		log.Fatalf("could not open discord session: %s", err)
 	}

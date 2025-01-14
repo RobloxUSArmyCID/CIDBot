@@ -30,6 +30,21 @@ var Commands = []*discordgo.ApplicationCommand{
 	},
 }
 
+var ServerCommands = []*discordgo.ApplicationCommand{
+	{
+		Name:        "whitelist",
+		Description: "Add a user to the CID Bot whitelist",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "user_id",
+				Description: "The Discord ID of the user who needs to be whitelisted",
+				Required:    true,
+			},
+		},
+	},
+}
+
 func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOption) CommandOptions {
 	co := make(CommandOptions)
 	for _, option := range opts {
@@ -39,11 +54,11 @@ func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOpti
 }
 
 var (
-	groups        []*roblox.Group
-	badges        []*roblox.Badge
-	friends       []*roblox.User
-	user          *roblox.User
-	thumbnail     *string
+	groups    []*roblox.Group
+	badges    []*roblox.Badge
+	friends   []*roblox.User
+	user      *roblox.User
+	thumbnail *string
 
 	mu sync.Mutex
 )
