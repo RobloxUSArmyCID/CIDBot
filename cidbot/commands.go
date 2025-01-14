@@ -2,7 +2,9 @@ package cidbot
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +29,28 @@ var Commands = []*discordgo.ApplicationCommand{
 				Required:    true,
 			},
 		},
+		IntegrationTypes: &[]discordgo.ApplicationIntegrationType{
+			discordgo.ApplicationIntegrationUserInstall,
+			discordgo.ApplicationIntegrationGuildInstall,
+		},
+	},
+}
+
+var whitelistPermissions int64 = discordgo.PermissionAdministrator
+
+var ServerCommands = []*discordgo.ApplicationCommand{
+	{
+		Name:        "whitelist",
+		Description: "Add a user to the CID Bot whitelist",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "user_id",
+				Description: "The Discord ID of the user who needs to be whitelisted",
+				Required:    true,
+			},
+		},
+		DefaultMemberPermissions: &whitelistPermissions,
 	},
 }
 
@@ -39,11 +63,11 @@ func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOpti
 }
 
 var (
-	groups        []*roblox.Group
-	badges        []*roblox.Badge
-	friends       []*roblox.User
-	user          *roblox.User
-	thumbnail     *string
+	groups    []*roblox.Group
+	badges    []*roblox.Badge
+	friends   []*roblox.User
+	user      *roblox.User
+	thumbnail *string
 
 	mu sync.Mutex
 )
@@ -56,7 +80,31 @@ const (
 	THIRTY_REQUIRED_MEMBERS = 30
 )
 
+// error constants
+var (
+	errUnauthorized = errors.New("you are unauthorized to run this command")
+)
+
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	whitelistBytes, err := os.ReadFile("./whitelist")
+	if err != nil {
+		InteractionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
+		return
+	}
+
+	var invoker *discordgo.User
+	if interaction.Member.User == nil {
+		invoker = interaction.User
+	} else {
+		invoker = interaction.Member.User
+	}
+
+	whitelist := string(whitelistBytes)
+	if !strings.Contains(whitelist, invoker.ID) {
+		InteractionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
+		return
+	}
+
 	username := options["username"].StringValue()
 
 	limiter.Wait(context.Background())
@@ -227,6 +275,31 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		InteractionFailed(session, interaction, "could not send message", err)
 	}
 
+}
+
+func WhitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	userID := options["user_id"].StringValue()
+	userIDBytes := []byte(userID + "\n")
+
+	user, err := session.User(userID)
+	if err != nil {
+		InteractionFailed(session, interaction, "user doesn't exist or another error has occured", err)
+	}
+	file, err := os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		InteractionFailed(session, interaction, "couldn't open whitelist file", err)
+		return
+	}
+
+	_, err = file.Write(userIDBytes)
+	if err != nil {
+		InteractionFailed(session, interaction, "couldn't write the user ID to the whitelist file", err)
+		return
+	}
+
+	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
+		Content: "Succesfully added " + user.Username + " to the whitelist.",
+	})
 }
 
 func doUserInfoCalls(userID uint64) error {
