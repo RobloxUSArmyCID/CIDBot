@@ -3,3 +3,4 @@ main
 CIDBot-*
 bin/
 config.yml
+whitelist

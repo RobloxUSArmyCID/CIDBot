@@ -23,10 +23,11 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 		log.Fatalf("could not register admin commands: %s", err)
 	}
 
-	_, err = os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("couldn't create the whitelist file: %s", err)
 	}
+	defer file.Close()
 }
 
 func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {

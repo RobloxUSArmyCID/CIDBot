@@ -41,13 +41,40 @@ var whitelistPermissions int64 = discordgo.PermissionAdministrator
 var ServerCommands = []*discordgo.ApplicationCommand{
 	{
 		Name:        "whitelist",
-		Description: "Add a user to the CID Bot whitelist",
+		Description: "CID Bot whitelist commands",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "user_id",
-				Description: "The Discord ID of the user who needs to be whitelisted",
-				Required:    true,
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Name:        "add",
+				Description: "Adds a user to the CID Bot whitelist",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type: discordgo.ApplicationCommandOptionString,
+						Name: "user_id",
+						Description: "The Discord ID of the user who needs to be whitelisted",
+						Required: true,
+					},
+				},
+			},
+
+			{
+				Type: discordgo.ApplicationCommandOptionSubCommand,
+				Name: "view",
+				Description: "Lists all users allowed to use the CID Bot",
+			},
+
+			{
+				Type: discordgo.ApplicationCommandOptionSubCommand,
+				Name: "remove",
+				Description: "Remove a user from the CID Bot",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type: discordgo.ApplicationCommandOptionString,
+						Name: "user_id",
+						Description: "The Discord ID of the user who needs to be removed from the whitelist",
+						Required: true,
+					},
+				},
 			},
 		},
 		DefaultMemberPermissions: &whitelistPermissions,
@@ -275,31 +302,6 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		InteractionFailed(session, interaction, "could not send message", err)
 	}
 
-}
-
-func WhitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
-	userID := options["user_id"].StringValue()
-	userIDBytes := []byte(userID + "\n")
-
-	user, err := session.User(userID)
-	if err != nil {
-		InteractionFailed(session, interaction, "user doesn't exist or another error has occured", err)
-	}
-	file, err := os.OpenFile("./whitelist", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		InteractionFailed(session, interaction, "couldn't open whitelist file", err)
-		return
-	}
-
-	_, err = file.Write(userIDBytes)
-	if err != nil {
-		InteractionFailed(session, interaction, "couldn't write the user ID to the whitelist file", err)
-		return
-	}
-
-	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
-		Content: "Succesfully added " + user.Username + " to the whitelist.",
-	})
 }
 
 func doUserInfoCalls(userID uint64) error {
