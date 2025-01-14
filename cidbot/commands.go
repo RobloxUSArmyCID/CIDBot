@@ -29,6 +29,10 @@ var Commands = []*discordgo.ApplicationCommand{
 				Required:    true,
 			},
 		},
+		IntegrationTypes: &[]discordgo.ApplicationIntegrationType{
+			discordgo.ApplicationIntegrationUserInstall,
+			discordgo.ApplicationIntegrationGuildInstall,
+		},
 	},
 }
 
@@ -88,8 +92,15 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		return
 	}
 
+	var invoker *discordgo.User
+	if interaction.Member.User == nil {
+		invoker = interaction.User
+	} else {
+		invoker = interaction.Member.User
+	}
+
 	whitelist := string(whitelistBytes)
-	if !strings.Contains(whitelist, interaction.User.ID) {
+	if !strings.Contains(whitelist, invoker.ID) {
 		InteractionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
 		return
 	}
@@ -268,7 +279,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 func WhitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	userID := options["user_id"].StringValue()
-	userIDBytes := []byte(userID)
+	userIDBytes := []byte(userID + "\n")
 
 	user, err := session.User(userID)
 	if err != nil {
