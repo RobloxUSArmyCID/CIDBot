@@ -1,20 +1,17 @@
 package events
 
-func InteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	if interaction.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
-	data := interaction.ApplicationCommandData()
+import (
+	"log/slog"
 
-	DeferInteraction(session, interaction.Interaction)
+	"github.com/bwmarrin/discordgo"
+)
 
-	switch data.Name {
-	case "bgcheck":
-		BackgroundCheckCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
-	case "whitelist":
-		WhitelistCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
+func InteractionCreate(discord *discordgo.Session, event *discordgo.InteractionCreate) {
+	slog.Debug("interaction received", "interaction", event.Interaction)
+	switch event.Type {
+	case discordgo.InteractionApplicationCommand:
+		commands.Executed(discord, event.Interaction)
 	default:
-		log.Printf("invalid command \"%s\" selected", data.Name)
+		slog.Warn("unhandled interaction type", "type", event.Type, "id", event.Interaction.ID)
 	}
-
 }
