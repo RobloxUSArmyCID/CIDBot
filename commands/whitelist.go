@@ -10,53 +10,53 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func whitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction) {
+func whitelistCommand(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	subcommand := interaction.ApplicationCommandData().Options[0]
 	subcommandOptions := ParseCommandOptions(subcommand.Options)
 	switch subcommand.Name {
 	case "add":
-		addCommand(session, interaction, subcommandOptions)
+		addCommand(discord, interaction, subcommandOptions)
 	case "view":
-		viewCommand(session, interaction, subcommandOptions)
+		viewCommand(discord, interaction, subcommandOptions)
 	case "remove":
-		removeCommand(session, interaction, subcommandOptions)
+		removeCommand(discord, interaction, subcommandOptions)
 	default:
 		log.Printf("incorrect whitelist command used: %s", subcommand.Name)
 	}
 }
 
-func addCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func addCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	userID := options["user_id"].StringValue()
 	userIDBytes := []byte(userID + "\n")
 
-	user, err := session.User(userID)
+	user, err := discord.User(userID)
 	if err != nil {
-		interactionFailed(session, interaction, "user doesn't exist or another error has occured", err)
+		interactionFailed(discord, interaction, "user doesn't exist or another error has occured", err)
 		return
 	}
 
 	file, err := os.OpenFile(config.Configuration.WhitelistPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return
 	}
 	defer file.Close()
 
 	_, err = file.Write(userIDBytes)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't write the user ID to the whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't write the user ID to the whitelist file", err)
 		return
 	}
 
-	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
+	discord.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
 		Content: "Succesfully added " + user.Username + " to the whitelist.",
 	})
 }
 
-func viewCommand(session *discordgo.Session, interaction *discordgo.Interaction, _ CommandOptions) {
+func viewCommand(discord *discordgo.Session, interaction *discordgo.Interaction, _ CommandOptions) {
 	fileContentsBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return
 	}
 
@@ -73,28 +73,28 @@ func viewCommand(session *discordgo.Session, interaction *discordgo.Interaction,
 		Description: mentions,
 		Color:       0x00ADD8,
 		Footer: &discordgo.MessageEmbedFooter{
-			Text:    session.State.User.Username,
-			IconURL: session.State.User.AvatarURL(""),
+			Text:    discord.State.User.Username,
+			IconURL: discord.State.User.AvatarURL(""),
 		},
 	}
 
-	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
+	discord.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{responseEmbed},
 	})
 }
 
-func removeCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func removeCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	userID := strings.TrimSpace(options["user_id"].StringValue())
 
-	user, err := session.User(userID)
+	user, err := discord.User(userID)
 	if err != nil {
-		interactionFailed(session, interaction, "user doesn't exist or another error has occured", err)
+		interactionFailed(discord, interaction, "user doesn't exist or another error has occured", err)
 		return
 	}
 
 	fileContentsBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't read whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't read whitelist file", err)
 		return
 	}
 
@@ -109,18 +109,18 @@ func removeCommand(session *discordgo.Session, interaction *discordgo.Interactio
 
 	file, err := os.OpenFile(config.Configuration.WhitelistPath, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return
 	}
 	defer file.Close()
 
 	_, err = file.Write([]byte(newContents))
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't write to the whitelist file", err)
+		interactionFailed(discord, interaction, "couldn't write to the whitelist file", err)
 		return
 	}
 
-	session.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
+	discord.FollowupMessageCreate(interaction, false, &discordgo.WebhookParams{
 		Content: "Successfully removed " + user.Username + " from the whitelist.",
 	})
 }
