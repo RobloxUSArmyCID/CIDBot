@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -21,6 +20,8 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	slog.SetDefault(logger)
 
+	slog.Info("starting bot")
+	slog.Debug("parsing config")
 	if err := config.Parse(); err != nil {
 		slog.Error("could not parse config", "err", err)
 		return
@@ -33,6 +34,7 @@ func main() {
 	}
 
 	defer func() {
+		slog.Info("closing discord session")
 		err := discord.Close()
 		if err != nil {
 			slog.Warn("couldn't close session gracefully: %s", err)
@@ -40,9 +42,9 @@ func main() {
 	}()
 
 	discord.AddHandler(events.Ready)
-	log.Println("Ready")
 	discord.AddHandler(events.InteractionCreate)
 
+	slog.Info("opening discord session")
 	err = discord.Open()
 	if err != nil {
 		slog.Error("could not open discord session", "err", err)

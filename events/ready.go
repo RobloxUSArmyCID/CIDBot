@@ -40,5 +40,6 @@ func Ready(discord *discordgo.Session, event *discordgo.Ready) {
 		os.Exit(1)
 	}
 	
+	slog.Info("ready")
 	defer file.Close()
 }
