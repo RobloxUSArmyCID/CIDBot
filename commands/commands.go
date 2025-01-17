@@ -1,9 +1,10 @@
-package cidbot
+package commands
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"sync"
@@ -49,30 +50,30 @@ var ServerCommands = []*discordgo.ApplicationCommand{
 				Description: "Adds a user to the CID Bot whitelist",
 				Options: []*discordgo.ApplicationCommandOption{
 					{
-						Type: discordgo.ApplicationCommandOptionString,
-						Name: "user_id",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "user_id",
 						Description: "The Discord ID of the user who needs to be whitelisted",
-						Required: true,
+						Required:    true,
 					},
 				},
 			},
 
 			{
-				Type: discordgo.ApplicationCommandOptionSubCommand,
-				Name: "view",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Name:        "view",
 				Description: "Lists all users allowed to use the CID Bot",
 			},
 
 			{
-				Type: discordgo.ApplicationCommandOptionSubCommand,
-				Name: "remove",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Name:        "remove",
 				Description: "Remove a user from the CID Bot",
 				Options: []*discordgo.ApplicationCommandOption{
 					{
-						Type: discordgo.ApplicationCommandOptionString,
-						Name: "user_id",
+						Type:        discordgo.ApplicationCommandOptionString,
+						Name:        "user_id",
 						Description: "The Discord ID of the user who needs to be removed from the whitelist",
-						Required: true,
+						Required:    true,
 					},
 				},
 			},
@@ -111,6 +112,44 @@ const (
 var (
 	errUnauthorized = errors.New("you are unauthorized to run this command")
 )
+
+func InteractionFailed(session *discordgo.Session, interaction *discordgo.Interaction, content string, err error) error {
+	embed := &discordgo.MessageEmbed{
+		Author: &discordgo.MessageEmbedAuthor{
+			Name:    interaction.Member.User.Username,
+			IconURL: interaction.Member.User.AvatarURL(""),
+		},
+		Title:       ":x: | An error occurred!",
+		Description: fmt.Sprintf("Error contents:\n```%s: %s```", content, err),
+		Timestamp:   time.Now().Format(time.RFC3339),
+		Color:       0x8b0000,
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "If you believe this is an error, contact the Investigatory Director.",
+		},
+	}
+
+	_, err = session.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+		Embeds: []*discordgo.MessageEmbed{
+			embed,
+		},
+	})
+
+	return err
+
+}
+
+func DeferInteraction(session *discordgo.Session, interaction *discordgo.Interaction) {
+	err := session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		log.Printf("could not defer interaction: %s", err)
+		err = InteractionFailed(session, interaction, "could not defer interaction (possible race condition):", err)
+		if err != nil {
+			log.Fatalf("could not send message regarding failed deferring (possible race condition): %s", err)
+		}
+	}
+}
 
 func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	whitelistBytes, err := os.ReadFile(Configuration.WhitelistPath)

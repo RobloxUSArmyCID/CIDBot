@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 
-	"github.com/RobloxUSArmyCID/CIDBot/cidbot"
+	"github.com/RobloxUSArmyCID/CIDBot/config"
+	"github.com/RobloxUSArmyCID/CIDBot/events"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -15,33 +17,36 @@ func handleInterrupt() {
 	<-sigint
 }
 
-
 func main() {
-	log.Println("Launching...")
-	
-	if err := cidbot.ParseConfig(); err != nil {
-		log.Fatalf("could not parse config: %s", err)
+	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
+
+	if err := config.Parse(); err != nil {
+		slog.Error("could not parse config", "err", err)
+		return
 	}
 
-	discord, err := discordgo.New("Bot " + cidbot.Configuration.Token)
+	discord, err := discordgo.New("Bot " + config.Configuration.Token)
 	if err != nil {
-		log.Fatalf("could not create discord session: %s", err)
+		slog.Error("could not create discord session", "err", err)
+		return
 	}
 
 	defer func() {
 		err := discord.Close()
 		if err != nil {
-			log.Printf("couldn't close session gracefully: %s", err)
+			slog.Warn("couldn't close session gracefully: %s", err)
 		}
 	}()
 
-	discord.AddHandler(cidbot.OnReady)
+	discord.AddHandler(events.Ready)
 	log.Println("Ready")
-	discord.AddHandler(cidbot.OnInteractionCreate)
+	discord.AddHandler(events.InteractionCreate)
 
 	err = discord.Open()
 	if err != nil {
-		log.Fatalf("could not open discord session: %s", err)
+		slog.Error("could not open discord session", "err", err)
+		return
 	}
 
 	handleInterrupt()

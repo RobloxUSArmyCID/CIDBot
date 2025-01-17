@@ -1,4 +1,4 @@
-package cidbot
+package events
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
+func Ready(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	err := session.UpdateCustomStatus("Background checking...")
 	if err != nil {
 		log.Fatalf("could not set custom status: %s", err)
@@ -30,21 +30,4 @@ func OnReady(session *discordgo.Session, readyEvent *discordgo.Ready) {
 	defer file.Close()
 }
 
-func OnInteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	if interaction.Type != discordgo.InteractionApplicationCommand {
-		return
-	}
-	data := interaction.ApplicationCommandData()
 
-	DeferInteraction(session, interaction.Interaction)
-
-	switch data.Name {
-	case "bgcheck":
-		BackgroundCheckCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
-	case "whitelist":
-		WhitelistCommand(session, interaction.Interaction, ParseCommandOptions(data.Options))
-	default:
-		log.Printf("invalid command \"%s\" selected", data.Name)
-	}
-
-}
