@@ -1,7 +1,7 @@
 package events
 
 import (
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/RobloxUSArmyCID/CIDBot/commands"
@@ -9,25 +9,29 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func Ready(session *discordgo.Session, readyEvent *discordgo.Ready) {
-	err := session.UpdateCustomStatus("Background checking...")
+func Ready(discord *discordgo.Session, event *discordgo.Ready) {
+	err := discord.UpdateCustomStatus("Background checking...")
 	if err != nil {
-		log.Fatalf("could not set custom status: %s", err)
+		slog.Error("could not set custom status", "err", err)
+		os.Exit(1)
 	}
 
-	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, "", commands.Commands)
+	_, err = discord.ApplicationCommandBulkOverwrite(event.Application.ID, "", commands.Commands)
 	if err != nil {
-		log.Fatalf("could not register commands: %s", err)
+		slog.Error("could not register commands", "err", err)
+		os.Exit(1)
 	}
 
-	_, err = session.ApplicationCommandBulkOverwrite(readyEvent.Application.ID, config.Configuration.AdminServerID, commands.ServerCommands)
+	_, err = discord.ApplicationCommandBulkOverwrite(event.Application.ID, config.Configuration.AdminServerID, commands.ServerCommands)
 	if err != nil {
-		log.Fatalf("could not register admin commands: %s", err)
+		slog.Error("could not register admin commands", "err", err)
+		os.Exit(1)
 	}
 
 	file, err := os.OpenFile(config.Configuration.WhitelistPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatalf("couldn't create the whitelist file: %s", err)
+		slog.Error("couldn't create the whitelist file", "err", err)
+		os.Exit(1)
 	}
 	defer file.Close()
 }
