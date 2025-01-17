@@ -1,4 +1,4 @@
-package cidbot
+package config
 
 import (
 	"flag"
@@ -17,7 +17,7 @@ var configPath = flag.String("config-path", "./config.yml", "The path to a file 
 
 var Configuration *Config
 
-func ParseConfig() (err error) {
+func Parse() (err error) {
 	flag.Parse()
 
 	fileContents, err := os.ReadFile(*configPath)

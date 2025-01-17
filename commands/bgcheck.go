@@ -1,121 +1,22 @@
-package cidbot
+package commands
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/RobloxUSArmyCID/CIDBot/config"
 	"github.com/RobloxUSArmyCID/CIDBot/roblox"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/sync/errgroup"
-	"golang.org/x/time/rate"
 )
 
-type CommandOptions map[string]*discordgo.ApplicationCommandInteractionDataOption
-
-var Commands = []*discordgo.ApplicationCommand{
-	{
-		Name:        "bgcheck",
-		Description: "Background check a Roblox user",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionString,
-				Name:        "username",
-				Description: "The username of the user you wish to background check",
-				Required:    true,
-			},
-		},
-		IntegrationTypes: &[]discordgo.ApplicationIntegrationType{
-			discordgo.ApplicationIntegrationUserInstall,
-			discordgo.ApplicationIntegrationGuildInstall,
-		},
-	},
-}
-
-var whitelistPermissions int64 = discordgo.PermissionAdministrator
-
-var ServerCommands = []*discordgo.ApplicationCommand{
-	{
-		Name:        "whitelist",
-		Description: "CID Bot whitelist commands",
-		Options: []*discordgo.ApplicationCommandOption{
-			{
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Name:        "add",
-				Description: "Adds a user to the CID Bot whitelist",
-				Options: []*discordgo.ApplicationCommandOption{
-					{
-						Type: discordgo.ApplicationCommandOptionString,
-						Name: "user_id",
-						Description: "The Discord ID of the user who needs to be whitelisted",
-						Required: true,
-					},
-				},
-			},
-
-			{
-				Type: discordgo.ApplicationCommandOptionSubCommand,
-				Name: "view",
-				Description: "Lists all users allowed to use the CID Bot",
-			},
-
-			{
-				Type: discordgo.ApplicationCommandOptionSubCommand,
-				Name: "remove",
-				Description: "Remove a user from the CID Bot",
-				Options: []*discordgo.ApplicationCommandOption{
-					{
-						Type: discordgo.ApplicationCommandOptionString,
-						Name: "user_id",
-						Description: "The Discord ID of the user who needs to be removed from the whitelist",
-						Required: true,
-					},
-				},
-			},
-		},
-		DefaultMemberPermissions: &whitelistPermissions,
-	},
-}
-
-func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOption) CommandOptions {
-	co := make(CommandOptions)
-	for _, option := range opts {
-		co[option.Name] = option
-	}
-	return co
-}
-
-var (
-	groups    []*roblox.Group
-	badges    []*roblox.Badge
-	friends   []*roblox.User
-	user      *roblox.User
-	thumbnail *string
-
-	mu sync.Mutex
-)
-
-var limiter = rate.NewLimiter(10, 1)
-
-const (
-	USAR_GROUP_ID           = 3108077
-	USAR_E1_RANK            = 5
-	THIRTY_REQUIRED_MEMBERS = 30
-)
-
-// error constants
-var (
-	errUnauthorized = errors.New("you are unauthorized to run this command")
-)
-
-func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
-	whitelistBytes, err := os.ReadFile(Configuration.WhitelistPath)
+func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	whitelistBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
-		InteractionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
+		interactionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
 		return
 	}
 
@@ -128,7 +29,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	whitelist := string(whitelistBytes)
 	if !strings.Contains(whitelist, invoker.ID) {
-		InteractionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
+		interactionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
 		return
 	}
 
@@ -137,18 +38,18 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 	limiter.Wait(context.Background())
 	temp_user, err := roblox.GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
-		InteractionFailed(session, interaction, "no such user exists", err)
+		interactionFailed(session, interaction, "no such user exists", err)
 		return
 	}
 
 	if err != nil {
-		InteractionFailed(session, interaction, "could not get user info by username", err)
+		interactionFailed(session, interaction, "could not get user info by username", err)
 		return
 	}
 
 	err = doUserInfoCalls(temp_user[0].ID)
 	if err != nil {
-		InteractionFailed(session, interaction, "error happened when doing one of the requests to roblox", err)
+		interactionFailed(session, interaction, "error happened when doing one of the requests to roblox", err)
 		return
 	}
 
@@ -159,7 +60,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	friendsWithNames, err := roblox.GetUsersByID(friendsIDs)
 	if err != nil {
-		InteractionFailed(session, interaction, "error happened when getting one of the user's friends' information", err)
+		interactionFailed(session, interaction, "error happened when getting one of the user's friends' information", err)
 		return
 	}
 
@@ -299,7 +200,7 @@ func BackgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		},
 	})
 	if err != nil {
-		InteractionFailed(session, interaction, "could not send message", err)
+		interactionFailed(session, interaction, "could not send message", err)
 	}
 
 }
