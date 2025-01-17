@@ -135,7 +135,8 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	}
 }
 
-func interactionFailed(session *discordgo.Session, interaction *discordgo.Interaction, content string, err error) error {
+func interactionFailed(discord *discordgo.Session, interaction *discordgo.Interaction, content string, err error) error {
+	slog.Warn("interaction failed", "id", interaction.ID, "guild", interaction.GuildID, "err", err)
 	embed := &discordgo.MessageEmbed{
 		Author: &discordgo.MessageEmbedAuthor{
 			Name:    interaction.Member.User.Username,
@@ -150,7 +151,7 @@ func interactionFailed(session *discordgo.Session, interaction *discordgo.Intera
 		},
 	}
 
-	_, err = session.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+	_, err = discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
 			embed,
 		},
@@ -160,8 +161,8 @@ func interactionFailed(session *discordgo.Session, interaction *discordgo.Intera
 
 }
 
-func deferInteraction(session *discordgo.Session, interaction *discordgo.Interaction) error {
-	return session.InteractionRespond(interaction, &discordgo.InteractionResponse{
+func deferInteraction(discord *discordgo.Session, interaction *discordgo.Interaction) error {
+	return discord.InteractionRespond(interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 	})
 }

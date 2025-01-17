@@ -13,10 +13,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	whitelistBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
-		interactionFailed(session, interaction, "couldn't open the whitelist file", errUnauthorized)
+		interactionFailed(discord, interaction, "couldn't open the whitelist file", errUnauthorized)
 		return
 	}
 
@@ -29,7 +29,7 @@ func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	whitelist := string(whitelistBytes)
 	if !strings.Contains(whitelist, invoker.ID) {
-		interactionFailed(session, interaction, "You are not allowed to run this command", errUnauthorized)
+		interactionFailed(discord, interaction, "You are not allowed to run this command", errUnauthorized)
 		return
 	}
 
@@ -38,18 +38,18 @@ func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 	limiter.Wait(context.Background())
 	temp_user, err := roblox.GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
-		interactionFailed(session, interaction, "no such user exists", err)
+		interactionFailed(discord, interaction, "no such user exists", err)
 		return
 	}
 
 	if err != nil {
-		interactionFailed(session, interaction, "could not get user info by username", err)
+		interactionFailed(discord, interaction, "could not get user info by username", err)
 		return
 	}
 
 	err = doUserInfoCalls(temp_user[0].ID)
 	if err != nil {
-		interactionFailed(session, interaction, "error happened when doing one of the requests to roblox", err)
+		interactionFailed(discord, interaction, "error happened when doing one of the requests to roblox", err)
 		return
 	}
 
@@ -60,7 +60,7 @@ func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 
 	friendsWithNames, err := roblox.GetUsersByID(friendsIDs)
 	if err != nil {
-		interactionFailed(session, interaction, "error happened when getting one of the user's friends' information", err)
+		interactionFailed(discord, interaction, "error happened when getting one of the user's friends' information", err)
 		return
 	}
 
@@ -194,13 +194,13 @@ func backgroundCheckCommand(session *discordgo.Session, interaction *discordgo.I
 		},
 	}
 
-	_, err = session.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+	_, err = discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
 			&embed,
 		},
 	})
 	if err != nil {
-		interactionFailed(session, interaction, "could not send message", err)
+		interactionFailed(discord, interaction, "could not send message", err)
 	}
 
 }
