@@ -3,6 +3,7 @@ package events
 import (
 	"log/slog"
 
+	"github.com/RobloxUSArmyCID/CIDBot/commands"
 	"github.com/bwmarrin/discordgo"
 )
 

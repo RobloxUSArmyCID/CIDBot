@@ -27,7 +27,7 @@ func Ready(discord *discordgo.Session, event *discordgo.Ready) {
 	}
 
 	slog.Debug("registering server commands")
-	_, err = discord.ApplicationCommandBulkOverwrite(event.Application.ID, config.Configuration.AdminServerID, commands.ServerCommands)
+	_, err = discord.ApplicationCommandBulkOverwrite(event.Application.ID, config.Configuration.AdminServerID, commands.AdminServerCommands)
 	if err != nil {
 		slog.Error("could not register server commands", "err", err)
 		os.Exit(1)
@@ -39,7 +39,7 @@ func Ready(discord *discordgo.Session, event *discordgo.Ready) {
 		slog.Error("couldn't create the whitelist file", "err", err)
 		os.Exit(1)
 	}
-	
+
 	slog.Info("ready")
 	defer file.Close()
 }

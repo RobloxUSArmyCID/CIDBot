@@ -37,7 +37,7 @@ func main() {
 		slog.Info("closing discord session")
 		err := discord.Close()
 		if err != nil {
-			slog.Warn("couldn't close session gracefully: %s", err)
+			slog.Warn("couldn't close session gracefully", "err", err)
 		}
 	}()
 
