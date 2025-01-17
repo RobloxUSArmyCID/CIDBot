@@ -129,7 +129,7 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	case "bgcheck":
 		backgroundCheckCommand(discord, interaction, options)
 	case "whitelist":
-		whitelistCommand(discord, interaction, options)
+		whitelistCommand(discord, interaction)
 	default:
 		slog.Warn("incorrect command used", "command", command.Name, "id", interaction.ID)
 	}

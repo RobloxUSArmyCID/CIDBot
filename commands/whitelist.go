@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func whitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func whitelistCommand(session *discordgo.Session, interaction *discordgo.Interaction) {
 	subcommand := interaction.ApplicationCommandData().Options[0]
 	subcommandOptions := ParseCommandOptions(subcommand.Options)
 	switch subcommand.Name {
