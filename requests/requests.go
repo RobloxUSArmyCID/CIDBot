@@ -12,7 +12,7 @@ type ResponseData[T any] struct {
 	Data []T `json:"data"`
 }
 
-func GetRequest[T any](url string) (*T, error) {
+func Get[T any](url string) (*T, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
