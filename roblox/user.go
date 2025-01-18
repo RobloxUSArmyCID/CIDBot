@@ -25,7 +25,6 @@ type GetUsersByIDRequest struct {
 	ExcludeBannedUsers bool     `json:"excludeBannedUsers"`
 }
 
-
 func GetUsersByUsernames(names []string) ([]*User, error) {
 	requestUrl := "https://users.roblox.com/v1/usernames/users"
 
@@ -34,7 +33,7 @@ func GetUsersByUsernames(names []string) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.Post[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +49,7 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.Post[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -60,5 +59,5 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 
 func GetUserByID(id uint64) (*User, error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", id)
-	return requests.GetRequest[User](requestUrl)
+	return requests.Get[User](requestUrl)
 }
