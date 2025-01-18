@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	IsDevelopment bool   `yaml:"is_development"`
 	Token         string `yaml:"token"`
 	AdminServerID string `yaml:"admin_server_id"`
 	WhitelistPath string `yaml:"whitelist_path"`
