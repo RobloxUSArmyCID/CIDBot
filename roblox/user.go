@@ -33,7 +33,7 @@ func GetUsersByUsernames(names []string) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.Post[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 		ExcludeBannedUsers: true,
 	}
 
-	response, err := requests.PostRequest[requests.ResponseData[*User]](requestUrl, requestData)
+	response, err := requests.Post[requests.ResponseData[*User]](requestUrl, requestData)
 	if err != nil {
 		return nil, err
 	}
