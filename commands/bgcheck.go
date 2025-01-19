@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -14,6 +15,7 @@ import (
 )
 
 func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+	slog.Debug("opening whitelist file")
 	whitelistBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open the whitelist file", errUnauthorized)
@@ -27,6 +29,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		invoker = interaction.Member.User
 	}
 
+	slog.Debug("checking if invoker is whitelisted", "id", invoker.ID)
 	whitelist := string(whitelistBytes)
 	if !strings.Contains(whitelist, invoker.ID) {
 		interactionFailed(discord, interaction, "You are not allowed to run this command", errUnauthorized)
@@ -36,6 +39,8 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	username := options["username"].StringValue()
 
 	limiter.Wait(context.Background())
+	
+	slog.Debug("getting user info by username", "username", username)
 	temp_user, err := roblox.GetUsersByUsernames([]string{username})
 	if len(temp_user) == 0 {
 		interactionFailed(discord, interaction, "no such user exists", err)
@@ -58,6 +63,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		friendsIDs = append(friendsIDs, friend.ID)
 	}
 
+	slog.Debug("getting friends' information", "ids", friendsIDs)
 	friendsWithNames, err := roblox.GetUsersByID(friendsIDs)
 	if err != nil {
 		interactionFailed(discord, interaction, "error happened when getting one of the user's friends' information", err)
@@ -210,6 +216,7 @@ func doUserInfoCalls(userID uint64) error {
 
 	concurrentCalls.Go(func() error {
 		limiter.Wait(context.Background())
+		slog.Debug("getting user info by id", "id", userID)
 		data, err := roblox.GetUserByID(userID)
 		if err != nil {
 			return err
@@ -222,6 +229,7 @@ func doUserInfoCalls(userID uint64) error {
 
 	concurrentCalls.Go(func() error {
 		limiter.Wait(context.Background())
+		slog.Debug("getting user groups", "id", userID)
 		data, err := roblox.GetUserGroups(userID)
 		if err != nil {
 			return err
@@ -234,6 +242,7 @@ func doUserInfoCalls(userID uint64) error {
 
 	concurrentCalls.Go(func() error {
 		limiter.Wait(context.Background())
+		slog.Debug("getting user badges", "id", userID)
 		data, err := roblox.GetUserBadges(userID)
 		if err != nil {
 			return err
@@ -246,6 +255,7 @@ func doUserInfoCalls(userID uint64) error {
 
 	concurrentCalls.Go(func() error {
 		limiter.Wait(context.Background())
+		slog.Debug("getting user friends", "id", userID)
 		data, err := roblox.GetUserFriends(userID)
 		if err != nil {
 			return err
@@ -258,6 +268,7 @@ func doUserInfoCalls(userID uint64) error {
 
 	concurrentCalls.Go(func() error {
 		limiter.Wait(context.Background())
+		slog.Debug("getting user thumbnail", "id", userID)
 		data, err := roblox.GetUserThumbnail(userID)
 		if err != nil {
 			return err
