@@ -41,8 +41,8 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	limiter.Wait(context.Background())
 	
 	slog.Debug("getting user info by username", "username", username)
-	temp_user, err := roblox.GetUsersByUsernames([]string{username})
-	if len(temp_user) == 0 {
+	tempUser, err := roblox.GetUsersByUsernames([]string{username})
+	if len(tempUser) == 0 {
 		interactionFailed(discord, interaction, "no such user exists", err)
 		return
 	}
@@ -52,7 +52,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		return
 	}
 
-	err = doUserInfoCalls(temp_user[0].ID)
+	err = doUserInfoCalls(tempUser[0].ID)
 	if err != nil {
 		interactionFailed(discord, interaction, "error happened when doing one of the requests to roblox", err)
 		return
