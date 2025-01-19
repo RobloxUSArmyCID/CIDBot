@@ -10,22 +10,22 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func whitelistCommand(discord *discordgo.Session, interaction *discordgo.Interaction) {
+func whitelist(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	subcommand := interaction.ApplicationCommandData().Options[0]
-	subcommandOptions := ParseCommandOptions(subcommand.Options)
+	subcommandOptions := ParseOptions(subcommand.Options)
 	switch subcommand.Name {
 	case "add":
-		addCommand(discord, interaction, subcommandOptions)
+		whitelistAdd(discord, interaction, subcommandOptions)
 	case "view":
-		viewCommand(discord, interaction, subcommandOptions)
+		whitelistView(discord, interaction, subcommandOptions)
 	case "remove":
-		removeCommand(discord, interaction, subcommandOptions)
+		whitelistRemove(discord, interaction, subcommandOptions)
 	default:
 		log.Printf("incorrect whitelist command used: %s", subcommand.Name)
 	}
 }
 
-func addCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	userID := options["user_id"].StringValue()
 	userIDBytes := []byte(userID + "\n")
 
@@ -53,7 +53,7 @@ func addCommand(discord *discordgo.Session, interaction *discordgo.Interaction, 
 	})
 }
 
-func viewCommand(discord *discordgo.Session, interaction *discordgo.Interaction, _ CommandOptions) {
+func whitelistView(discord *discordgo.Session, interaction *discordgo.Interaction, _ CommandOptions) {
 	fileContentsBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
@@ -83,7 +83,7 @@ func viewCommand(discord *discordgo.Session, interaction *discordgo.Interaction,
 	})
 }
 
-func removeCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
 	userID := strings.TrimSpace(options["user_id"].StringValue())
 
 	user, err := discord.User(userID)

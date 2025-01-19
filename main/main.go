@@ -17,15 +17,26 @@ func handleInterrupt() {
 }
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
-	slog.SetDefault(logger)
-
-	slog.Info("starting bot")
-	slog.Debug("parsing config")
 	if err := config.Parse(); err != nil {
 		slog.Error("could not parse config", "err", err)
 		return
 	}
+
+	var logger *slog.Logger
+
+	if config.Configuration.IsDevelopment {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+	} else {
+		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		}))
+	}
+
+	slog.SetDefault(logger)
+
+	slog.Info("starting bot")
 
 	discord, err := discordgo.New("Bot " + config.Configuration.Token)
 	if err != nil {

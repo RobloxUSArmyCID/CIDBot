@@ -78,7 +78,7 @@ var AdminServerCommands = []*discordgo.ApplicationCommand{
 	},
 }
 
-func ParseCommandOptions(opts []*discordgo.ApplicationCommandInteractionDataOption) CommandOptions {
+func ParseOptions(opts []*discordgo.ApplicationCommandInteractionDataOption) CommandOptions {
 	co := make(CommandOptions)
 	for _, option := range opts {
 		co[option.Name] = option
@@ -111,7 +111,7 @@ var (
 
 func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	command := interaction.ApplicationCommandData()
-	options := ParseCommandOptions(command.Options)
+	options := ParseOptions(command.Options)
 
 	slog.Info("command executed",
 		"command", command.Name,
@@ -129,7 +129,7 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	case "bgcheck":
 		backgroundCheckCommand(discord, interaction, options)
 	case "whitelist":
-		whitelistCommand(discord, interaction)
+		whitelist(discord, interaction)
 	default:
 		slog.Warn("incorrect command used", "command", command.Name, "id", interaction.ID)
 	}
