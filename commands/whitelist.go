@@ -12,7 +12,7 @@ import (
 
 func whitelistCommand(discord *discordgo.Session, interaction *discordgo.Interaction) {
 	subcommand := interaction.ApplicationCommandData().Options[0]
-	subcommandOptions := ParseCommandOptions(subcommand.Options)
+	subcommandOptions := ParseOptions(subcommand.Options)
 	switch subcommand.Name {
 	case "add":
 		addCommand(discord, interaction, subcommandOptions)
