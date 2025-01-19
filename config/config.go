@@ -1,4 +1,4 @@
-package cidbot
+package config
 
 import (
 	"flag"
@@ -8,6 +8,7 @@ import (
 )
 
 type Config struct {
+	IsDevelopment bool   `yaml:"is_development"`
 	Token         string `yaml:"token"`
 	AdminServerID string `yaml:"admin_server_id"`
 	WhitelistPath string `yaml:"whitelist_path"`
@@ -17,7 +18,7 @@ var configPath = flag.String("config-path", "./config.yml", "The path to a file 
 
 var Configuration *Config
 
-func ParseConfig() (err error) {
+func Parse() (err error) {
 	flag.Parse()
 
 	fileContents, err := os.ReadFile(*configPath)

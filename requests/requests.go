@@ -12,7 +12,7 @@ type ResponseData[T any] struct {
 	Data []T `json:"data"`
 }
 
-func GetRequest[T any](url string) (*T, error) {
+func Get[T any](url string) (*T, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func GetRequest[T any](url string) (*T, error) {
 	return &responseBody, nil
 }
 
-func PostRequest[T any](url string, data interface{}) (*T, error) {
+func Post[T any](url string, data interface{}) (*T, error) {
 	requestBody, err := json.Marshal(data)
 	if err != nil {
 		return nil, err

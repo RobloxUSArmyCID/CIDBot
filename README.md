@@ -12,12 +12,7 @@ The United States Army Criminal Investigation Division's background checking bot
 1. On Windows (Powershell):
 ```powershell
 cd <PATH_TO_CIDBOT_FOLDER>
-.\CIDBot-vX.X.X-windows-arch.exe --token <TOKEN>
-```
-OR
-```powershell
-cd <PATH_TO_CIDBOT_FOLDER>
-.\CIDBot-vX.X.X-windows-arch.exe --token-path <PATH_TO_FILE_CONTAINING_TOKEN>
+.\CIDBot-vX.X.X-windows-arch.exe --config-path <PATH_TO_CONFIG>
 ```
 > You may have to wait a little on the first run for your antivirus to scan the file.
 > You may also have to approve the file through Windows SmartScreen by pressing more details, then "Run anyway".
@@ -25,13 +20,7 @@ cd <PATH_TO_CIDBOT_FOLDER>
 ```bash
 cd <PATH_TO_CIDBOT_FOLDER>
 chmod +x CIDBot-vX.X.X-os-arch
-./CIDBot-vX.X.X-os-arch --token <TOKEN>
-```
-OR
-```bash
-cd <PATH_TO_CIDBOT_FOLDER>
-chmod +x CIDBot-vX.X.X-os-arch
-./CIDBot-vX.X.X-os-arch --token-path <PATH_TO_FILE_CONTAINING_TOKEN>
+./CIDBot-vX.X.X-os-arch --config-path <PATH_TO_CONFIG>
 ```
 > On macOS, you may have to open privacy & security settings and approve the file there.
 
@@ -51,7 +40,7 @@ chmod +x CIDBot-vX.X.X-os-arch
 5. Put in your Discord 2FA.
 
 # Building instructions
-The **only** supported building environment is Linux. It *should* work on macOS, but I don't guarantee anything. If you're on Windows, use WSL.
+The **only** supported building environment is Linux. It *should* work on macOS, but I don't guarantee anything. If you're on Windows, use WSL. The Go compiler can cross compile for Windows from Linux, and it does so upon using the `make release` command.
 - Testing:
 ```bash
 cd <PATH_TO_SOURCE>
