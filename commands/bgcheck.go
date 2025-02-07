@@ -39,11 +39,11 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	username := options["username"].StringValue()
 
 	limiter.Wait(context.Background())
-	
+
 	slog.Debug("getting user info by username", "username", username)
 	tempUser, err := roblox.GetUsersByUsernames([]string{username})
 	if len(tempUser) == 0 {
-		interactionFailed(discord, interaction, "no such user exists", err)
+
 		return
 	}
 
@@ -72,11 +72,11 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 
 	usarRank := "N/A"
 	isE1 := false
-	var groupsUnder30Members []*roblox.Group
+	var susGroups []*roblox.Group
 
 	for _, group := range groups {
-		if group.Group.MemberCount <= THIRTY_REQUIRED_MEMBERS {
-			groupsUnder30Members = append(groupsUnder30Members, group)
+		if group.IsSuspicious() {
+			susGroups = append(susGroups, group)
 		}
 
 		if group.Group.ID == USAR_GROUP_ID {
@@ -129,7 +129,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ In 15 or less groups (%d) ⚠\n", amountOfGroups))
 	}
 
-	for _, group := range groupsUnder30Members {
+	for _, group := range susGroups {
 		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspicious group: %s (%d members) ⚠\n", group.Group.Name, group.Group.MemberCount))
 	}
 
