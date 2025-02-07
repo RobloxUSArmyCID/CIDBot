@@ -2,6 +2,8 @@ package roblox
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/RobloxUSArmyCID/CIDBot/requests"
 )
@@ -30,4 +32,37 @@ func GetUserGroups(userID uint64) ([]*Group, error) {
 		return nil, err
 	}
 	return response.Data, nil
+}
+
+func (g Group) IsSuspicious() bool {
+	return slices.Contains(GetSuspiciousGroups([]Group{g}), &g)
+}
+
+func GetSuspiciousGroups(groups []Group) []*Group {
+	keywords := []string{
+		"syndicate",
+		"group",
+		"fam",
+		"family",
+		"legacy",
+		"bloodline",
+		"divine sister",
+		"pmc",
+		"task force",
+		"royalty",
+		"force",
+		"company",
+	}
+
+	susGroups := []*Group{}
+	for _, group := range groups {
+		if group.Group.MemberCount <= 30 {
+			susGroups = append(susGroups, &group)
+		}
+		if slices.Contains(keywords, strings.ToLower(group.Group.Name)) {
+			susGroups = append(susGroups, &group)
+		}
+	}
+
+	return susGroups
 }
