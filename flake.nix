@@ -7,6 +7,7 @@
     yaml = {
       url = "github:folospior/yaml.arm64.nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
   };
 
