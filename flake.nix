@@ -21,7 +21,9 @@
         lib,
         pkgs,
         ...
-      }: {
+      }: let
+        cfg = config.services.${name};
+      in {
         options.services.${name} = {
           enable = lib.mkEnableOption "CIDBot service";
           package = lib.mkOption {
@@ -31,7 +33,8 @@
           };
         };
 
-        config = lib.mkIf config.services.${name}.enable {
+        config = lib.mkIf cfg.enable {
+          home.packages = [cfg.package];
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";
@@ -39,7 +42,7 @@
             };
 
             Service = {
-              ExecStart = "${config.services.${name}}/bin/cidbot";
+              ExecStart = "${cfg.package}/bin/cidbot";
               Restart = "always";
             };
 
