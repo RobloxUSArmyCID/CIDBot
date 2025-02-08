@@ -4,18 +4,24 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    yaml = {
+      url = "github:jim3692/yaml.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    yaml,
     ...
   }: let
     name = "cidbot";
     src = ./.;
 
     systemIndependent = {
+      specialArgs.lib = nixpkgs.lib.extend (final: prev: {yaml = yaml.lib;});
       homeManagerModules.default = {
         config,
         lib,
@@ -31,10 +37,20 @@
             default = self.packages.${pkgs.system}.default;
             description = "The package to use for CIDBot.";
           };
+          extraConfig = lib.mkOption {
+            default = {};
+            description = "Configuration to put in the config.yml file";
+          };
+          configPath = lib.mkOption {
+            default = "${config.xdg.configHome}/CIDBot/config.yml";
+            type = lib.types.str;
+            description = "Where to put the config.yml file";
+          };
         };
 
         config = lib.mkIf cfg.enable {
           home.packages = [cfg.package];
+          home.file.${cfg.configPath}.source = lib.yaml.toYaml cfg.extraConfig;
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";
@@ -42,7 +58,7 @@
             };
 
             Service = {
-              ExecStart = "${cfg.package}/bin/cidbot";
+              ExecStart = "${cfg.package}/bin/cidbot --config-path ${cfg.configPath}";
               Restart = "always";
             };
 

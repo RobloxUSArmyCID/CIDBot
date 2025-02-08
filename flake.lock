@@ -36,7 +36,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "yaml": "yaml"
       }
     },
     "systems": {
@@ -51,6 +52,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "yaml": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1718542560,
+        "narHash": "sha256-Jn0Avas3XK7RLTpR7jPHManng0nNCUA6+9ZmnuMHATU=",
+        "owner": "jim3692",
+        "repo": "yaml.nix",
+        "rev": "e8df95364b9b240bf8caecc9ad0f1dae0a8e4edd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jim3692",
+        "repo": "yaml.nix",
         "type": "github"
       }
     }
