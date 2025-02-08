@@ -21,7 +21,6 @@
     src = ./.;
 
     systemIndependent = {
-      specialArgs.lib = nixpkgs.lib.extend (final: prev: {yaml = yaml.lib;});
       homeManagerModules.default = {
         config,
         lib,
@@ -50,7 +49,7 @@
 
         config = lib.mkIf cfg.enable {
           home.packages = [cfg.package];
-          home.file.${cfg.configPath}.source = lib.yaml.toYaml cfg.extraConfig;
+          home.file.${cfg.configPath}.source = yaml.lib.toYaml cfg.extraConfig;
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";
