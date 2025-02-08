@@ -4,12 +4,17 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    home-manager,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -34,6 +39,40 @@
           install -m755 -D $TMPDIR/bin/${name} $out/bin/${name}
           runHook postInstall
         '';
+      };
+
+      homeManagerModules.default = {
+        config,
+        lib,
+        pkgs,
+        ...
+      }: {
+        options.services.${name} = {
+          enable = lib.mkEnableOption "CIDBot service";
+          package = lib.mkOption {
+            type = lib.types.package;
+            default = self.packages.${pkgs.system}.default;
+            description = "The package to use for CIDBot.";
+          };
+        };
+
+        config = lib.mkIf config.services.${name}.enable {
+          systemd.user.services.cidbot = {
+            Unit = {
+              Description = "The CID Bot";
+              After = ["network.target"];
+            };
+
+            Service = {
+              ExecStart = "${config.services.${name}}/bin/cidbot";
+              Restart = "always";
+            };
+
+            Install = {
+              WantedBy = ["default.target"];
+            };
+          };
+        };
       };
 
       devShells.default = pkgs.mkShell {
