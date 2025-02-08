@@ -29,6 +29,7 @@
         ...
       }: let
         cfg = config.services.${name};
+        system = pkgs.stdenv.hostPlatform.system;
       in {
         options.services.${name} = {
           enable = lib.mkEnableOption "CIDBot service";
@@ -50,7 +51,7 @@
 
         config = lib.mkIf cfg.enable {
           home.packages = [cfg.package];
-          home.file.${cfg.configPath}.source = yaml.lib.toYaml cfg.extraConfig;
+          home.file.${cfg.configPath}.source = yaml.lib.${system}.toYaml cfg.extraConfig;
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";

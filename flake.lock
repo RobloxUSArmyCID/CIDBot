@@ -65,11 +65,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1739014732,
-        "narHash": "sha256-O4OaSsrZ0PvquRRG7Z71eynFTA6u+DPP5/Mb2hEEKkc=",
+        "lastModified": 1739021160,
+        "narHash": "sha256-G2N40nDH5wqEYnnPOWTAsgbwH+ATsn4PNiS211x0ZJQ=",
         "owner": "folospior",
         "repo": "yaml.arm64.nix",
-        "rev": "26c6e97594cdb8376ef483cacba191e368c74146",
+        "rev": "59f017a8acb327c9dc36bc0eebc15826bc977ecf",
         "type": "github"
       },
       "original": {
