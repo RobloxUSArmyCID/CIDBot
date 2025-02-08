@@ -5,7 +5,7 @@
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     yaml = {
-      url = "github:jim3692/yaml.nix";
+      url = "github:folospior/yaml.arm64.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

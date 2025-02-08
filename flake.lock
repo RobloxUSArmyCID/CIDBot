@@ -62,16 +62,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1718542560,
-        "narHash": "sha256-Jn0Avas3XK7RLTpR7jPHManng0nNCUA6+9ZmnuMHATU=",
-        "owner": "jim3692",
-        "repo": "yaml.nix",
-        "rev": "e8df95364b9b240bf8caecc9ad0f1dae0a8e4edd",
+        "lastModified": 1738978119,
+        "narHash": "sha256-0IeDqwDvsuAtAEdTKDFcWbvWSSwAH6bbvoMjawlCsZA=",
+        "owner": "folospior",
+        "repo": "yaml.arm64.nix",
+        "rev": "3f67f7f69190c66a47638116f14f3d5016c39b29",
         "type": "github"
       },
       "original": {
-        "owner": "jim3692",
-        "repo": "yaml.nix",
+        "owner": "folospior",
+        "repo": "yaml.arm64.nix",
         "type": "github"
       }
     }
