@@ -57,16 +57,19 @@
     },
     "yaml": {
       "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1738980345,
-        "narHash": "sha256-6KmeR0ksLypn6+lGop93czNdj4sCjvqMNtbhvdHt7Xs=",
+        "lastModified": 1739014732,
+        "narHash": "sha256-O4OaSsrZ0PvquRRG7Z71eynFTA6u+DPP5/Mb2hEEKkc=",
         "owner": "folospior",
         "repo": "yaml.arm64.nix",
-        "rev": "5f56e3c37f2dd2915fb04ee35848a6f88ae35b8e",
+        "rev": "26c6e97594cdb8376ef483cacba191e368c74146",
         "type": "github"
       },
       "original": {
