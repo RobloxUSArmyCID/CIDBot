@@ -20,11 +20,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1737469691,
-        "narHash": "sha256-nmKOgAU48S41dTPIXAq0AHZSehWUn6ZPrUKijHAMmIk=",
+        "lastModified": 1738961098,
+        "narHash": "sha256-yWNBf6VDW38tl179FEuJ0qukthVfB02kv+mRsfUsWC0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9e4d5190a9482a1fb9d18adf0bdb83c6e506eaab",
+        "rev": "a3eaf5e8eca7cab680b964138fb79073704aca75",
         "type": "github"
       },
       "original": {
@@ -36,7 +36,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "yaml": "yaml"
       }
     },
     "systems": {
@@ -51,6 +52,26 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "yaml": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1738980345,
+        "narHash": "sha256-6KmeR0ksLypn6+lGop93czNdj4sCjvqMNtbhvdHt7Xs=",
+        "owner": "folospior",
+        "repo": "yaml.arm64.nix",
+        "rev": "5f56e3c37f2dd2915fb04ee35848a6f88ae35b8e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "folospior",
+        "repo": "yaml.arm64.nix",
         "type": "github"
       }
     }
