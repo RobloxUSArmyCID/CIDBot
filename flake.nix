@@ -29,6 +29,10 @@
         ...
       }: let
         cfg = config.services.${name};
+        extraCfg =
+          if cfg.extraConfig == {}
+          then cfg.configFile
+          else yaml.lib.${pkgs.system}.toYaml cfg.extraConfig;
       in {
         options.services.${name} = {
           enable = lib.mkEnableOption "CIDBot service";
@@ -38,8 +42,14 @@
             description = "The package to use for CIDBot.";
           };
           extraConfig = lib.mkOption {
+            type = lib.types.attrs;
             default = {};
-            description = "Configuration to put in the config.yml file";
+            description = "Configuration to put in the config.yml file. Takes prescedence over configFile.";
+          };
+          configFile = lib.mkOption {
+            type = lib.types.path;
+            default = "";
+            description = "Configuration to put in the config.yml file in the form of YAML file.";
           };
           configPath = lib.mkOption {
             default = "${config.xdg.configHome}/CIDBot/config.yml";
@@ -50,7 +60,7 @@
 
         config = lib.mkIf cfg.enable {
           home.packages = [cfg.package];
-          home.file.${cfg.configPath}.source = yaml.lib.${pkgs.system}.toYaml cfg.extraConfig;
+          home.file.${cfg.configPath}.source = extraCfg;
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";
