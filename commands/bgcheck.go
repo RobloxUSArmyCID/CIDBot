@@ -1,22 +1,20 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/RobloxUSArmyCID/CIDBot/config"
+	"github.com/RobloxUSArmyCID/CIDBot/embeds"
 	"github.com/RobloxUSArmyCID/CIDBot/roblox"
 	"github.com/bwmarrin/discordgo"
-	"golang.org/x/sync/errgroup"
 )
 
-func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions, config *config.Config) {
 	slog.Debug("opening whitelist file")
-	whitelistBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
+	whitelistBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open the whitelist file", errUnauthorized)
 		return
@@ -38,107 +36,49 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 
 	username := options["username"].StringValue()
 
-	limiter.Wait(context.Background())
-
-	slog.Debug("getting user info by username", "username", username)
-	tempUser, err := roblox.GetUsersByUsernames([]string{username})
-	if len(tempUser) == 0 {
-
-		return
-	}
-
-	if err != nil {
-		interactionFailed(discord, interaction, "could not get user info by username", err)
-		return
-	}
-
-	err = doUserInfoCalls(tempUser[0].ID)
-	if err != nil {
-		interactionFailed(discord, interaction, "error happened when doing one of the requests to roblox", err)
-		return
-	}
-
-	friendsIDs := []uint64{}
-	for _, friend := range friends {
-		friendsIDs = append(friendsIDs, friend.ID)
-	}
-
-	slog.Debug("getting friends' information", "ids", friendsIDs)
-	friendsWithNames, err := roblox.GetUsersByID(friendsIDs)
-	if err != nil {
-		interactionFailed(discord, interaction, "error happened when getting one of the user's friends' information", err)
-		return
-	}
-
-	usarRank := "N/A"
-	isE1 := false
-	var susGroups []*roblox.Group
-
-	for _, group := range groups {
-		if group.IsSuspicious() {
-			susGroups = append(susGroups, group)
-		}
-
-		if group.Group.ID == USAR_GROUP_ID {
-			usarRank = group.Role.Name
-			isE1 = group.Role.Rank == USAR_E1_RANK
-		}
-	}
-
-	daysFromAccountCreation := int(time.Since(user.Created).Hours() / 24)
-
-	suspiciousFriends := roblox.GetSuspiciousFriends(user, friendsWithNames)
-
-	amountOfFriends := len(friends)
-	amountOfBadges := len(badges)
-	amountOfGroups := len(groups)
-	amountOfSuspiciousFriends := len(suspiciousFriends)
+	user, err := roblox.NewUser(username)
 
 	var descriptionBuilder strings.Builder
 	failedBackgroundCheck := false
 
-	if usarRank == "N/A" {
+	if user.UsarRank == "N/A" {
 		descriptionBuilder.WriteString("- ⚠ Not in USAR ⚠\n")
 		failedBackgroundCheck = true
 	}
 
-	if isE1 {
+	if user.IsE1 {
 		descriptionBuilder.WriteString("- ⚠ E1 ⚠\n")
 		failedBackgroundCheck = true
 	}
 
-	if amountOfBadges < 100 {
-		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Less than 100 badges (%d) ⚠\n", amountOfBadges))
+	if len(user.Badges) < 100 {
+		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Less than 100 badges (%d) ⚠\n", len(user.Badges)))
 		failedBackgroundCheck = true
 	}
 
-	if daysFromAccountCreation < 365 {
-		if daysFromAccountCreation < 90 {
-			descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Account age under 90 days old (%d) (failing) ⚠\n", daysFromAccountCreation))
+	if user.DaysFromCreation < 365 {
+		if user.DaysFromCreation < 90 {
+			descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Account age under 90 days old (%d) (failing) ⚠\n", user.DaysFromCreation))
 		} else {
 			descriptionBuilder.WriteString("- ⚠ Account age under 365 days old (suspicious, not failing) ⚠\n")
 		}
 	}
 
-	if amountOfFriends <= 3 {
+	if len(user.Friends) <= 3 {
 		descriptionBuilder.WriteString("- ⚠ 3 or less friends. ⚠\n")
 		failedBackgroundCheck = true
 	}
 
-	if amountOfGroups <= 15 {
-		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ In 15 or less groups (%d) ⚠\n", amountOfGroups))
+	if len(user.Groups) <= 15 {
+		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ In 15 or less groups (%d) ⚠\n", len(user.Friends)))
 	}
 
-	for _, group := range susGroups {
+	for _, group := range user.SuspiciousGroups {
 		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspicious group: %s (%d members) ⚠\n", group.Group.Name, group.Group.MemberCount))
 	}
 
-	if amountOfSuspiciousFriends > 0 {
-		usernamesOfSuspiciousFriends := []string{}
-		for _, friend := range suspiciousFriends {
-			usernamesOfSuspiciousFriends = append(usernamesOfSuspiciousFriends, friend.Name)
-		}
-		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspected alts in friends list: %s\n", strings.Join(usernamesOfSuspiciousFriends, ", ")))
+	if len(user.SuspiciousFriends) > 0 {
+		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspected alts in friends list: %s\n", strings.Join(user.UsernamesOfSuspiciousFriends, ", ")))
 	}
 
 	if descriptionBuilder.Len() == 0 {
@@ -158,126 +98,25 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		failed = "- Yes"
 	}
 
-	embed := discordgo.MessageEmbed{
-		Author: &discordgo.MessageEmbedAuthor{
-			Name:    interaction.Member.User.Username,
-			IconURL: interaction.Member.User.AvatarURL(""),
-		},
-		Title:       ":white_check_mark: | Background check finished!",
-		URL:         fmt.Sprintf("https://www.roblox.com/users/%d/profile", user.ID),
-		Description: fmt.Sprintf("```diff\n%s```", description),
-		Color:       0x00ADD8, // gopher blue
-		Timestamp:   time.Now().Format(time.RFC3339),
-		Thumbnail: &discordgo.MessageEmbedThumbnail{
-			URL: *thumbnail,
-		},
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name:   "Username:",
-				Value:  fmt.Sprintf("```%s```", user.Name),
-				Inline: true,
-			},
-			{
-				Name:   "ID:",
-				Value:  fmt.Sprintf("```%d```", user.ID),
-				Inline: true,
-			},
-			{
-				Name:   "Failed:",
-				Value:  fmt.Sprintf("```diff\n%s```", failed),
-				Inline: true,
-			},
-			{
-				Name:   "USAR Rank:",
-				Value:  fmt.Sprintf("```%s```", usarRank),
-				Inline: true,
-			},
-			{
-				Name:   "Account Age:",
-				Value:  fmt.Sprintf("```%d days old```", daysFromAccountCreation),
-				Inline: true,
-			},
-		},
-	}
+	profileURL := fmt.Sprintf("https://www.roblox.com/users/%d/profile", user.ID)
 
-	_, err = discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+	embed := embeds.NewBuilder().
+		SetAuthorUser(invoker).
+		SetColor(embeds.ColorGopherBlue).
+		SetCurrentTimestamp().
+		SetTitle(":white_check_mark: | Background check finished!").
+		SetDescription(description).
+		SetURL(profileURL).
+		AddField("Username:", user.Name, true).
+		AddField("ID:", fmt.Sprintf("%d", user.ID), true).
+		AddField("Failed:", failed, true).
+		AddField("USAR Rank:", user.UsarRank, true).
+		AddField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
+		Build()
+
+	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
-			&embed,
+			embed,
 		},
 	})
-	if err != nil {
-		interactionFailed(discord, interaction, "could not send message", err)
-	}
-
-}
-
-func doUserInfoCalls(userID uint64) error {
-	concurrentCalls := errgroup.Group{}
-
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		slog.Debug("getting user info by id", "id", userID)
-		data, err := roblox.GetUserByID(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		user = data
-		mu.Unlock()
-		return nil
-	})
-
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		slog.Debug("getting user groups", "id", userID)
-		data, err := roblox.GetUserGroups(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		groups = data
-		mu.Unlock()
-		return nil
-	})
-
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		slog.Debug("getting user badges", "id", userID)
-		data, err := roblox.GetUserBadges(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		badges = data
-		mu.Unlock()
-		return nil
-	})
-
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		slog.Debug("getting user friends", "id", userID)
-		data, err := roblox.GetUserFriends(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		friends = data
-		mu.Unlock()
-		return nil
-	})
-
-	concurrentCalls.Go(func() error {
-		limiter.Wait(context.Background())
-		slog.Debug("getting user thumbnail", "id", userID)
-		data, err := roblox.GetUserThumbnail(userID)
-		if err != nil {
-			return err
-		}
-		mu.Lock()
-		thumbnail = data
-		mu.Unlock()
-		return nil
-	})
-
-	return concurrentCalls.Wait()
 }

@@ -10,22 +10,22 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func whitelist(discord *discordgo.Session, interaction *discordgo.Interaction) {
+func whitelist(discord *discordgo.Session, interaction *discordgo.Interaction, config *config.Config) {
 	subcommand := interaction.ApplicationCommandData().Options[0]
 	subcommandOptions := ParseOptions(subcommand.Options)
 	switch subcommand.Name {
 	case "add":
-		whitelistAdd(discord, interaction, subcommandOptions)
+		whitelistAdd(discord, interaction, subcommandOptions, config)
 	case "view":
-		whitelistView(discord, interaction, subcommandOptions)
+		whitelistView(discord, interaction, config)
 	case "remove":
-		whitelistRemove(discord, interaction, subcommandOptions)
+		whitelistRemove(discord, interaction, subcommandOptions, config)
 	default:
 		log.Printf("incorrect whitelist command used: %s", subcommand.Name)
 	}
 }
 
-func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions, config *config.Config) {
 	userID := options["user_id"].StringValue()
 	userIDBytes := []byte(userID + "\n")
 
@@ -35,7 +35,7 @@ func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction
 		return
 	}
 
-	file, err := os.OpenFile(config.Configuration.WhitelistPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(config.WhitelistPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return
@@ -53,8 +53,8 @@ func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction
 	})
 }
 
-func whitelistView(discord *discordgo.Session, interaction *discordgo.Interaction, _ CommandOptions) {
-	fileContentsBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
+func whitelistView(discord *discordgo.Session, interaction *discordgo.Interaction, config *config.Config) {
+	fileContentsBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return
@@ -83,7 +83,7 @@ func whitelistView(discord *discordgo.Session, interaction *discordgo.Interactio
 	})
 }
 
-func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions) {
+func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions, config *config.Config) {
 	userID := strings.TrimSpace(options["user_id"].StringValue())
 
 	user, err := discord.User(userID)
@@ -92,7 +92,7 @@ func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interact
 		return
 	}
 
-	fileContentsBytes, err := os.ReadFile(config.Configuration.WhitelistPath)
+	fileContentsBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't read whitelist file", err)
 		return
@@ -107,7 +107,7 @@ func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interact
 		}
 	}
 
-	file, err := os.OpenFile(config.Configuration.WhitelistPath, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
+	file, err := os.OpenFile(config.WhitelistPath, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
 		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
 		return

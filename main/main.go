@@ -17,14 +17,15 @@ func handleInterrupt() {
 }
 
 func main() {
-	if err := config.Parse(); err != nil {
+	config, err := config.Parse()
+	if err != nil {
 		slog.Error("could not parse config", "err", err)
 		return
 	}
 
 	var logger *slog.Logger
 
-	if config.Configuration.IsDevelopment {
+	if config.IsDevelopment {
 		logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		}))
@@ -38,7 +39,7 @@ func main() {
 
 	slog.Info("starting bot")
 
-	discord, err := discordgo.New("Bot " + config.Configuration.Token)
+	discord, err := discordgo.New("Bot " + config.Token)
 	if err != nil {
 		slog.Error("could not create discord session", "err", err)
 		return
@@ -52,8 +53,8 @@ func main() {
 		}
 	}()
 
-	discord.AddHandler(events.Ready)
-	discord.AddHandler(events.InteractionCreate)
+	discord.AddHandler(events.Ready(config))
+	discord.AddHandler(events.InteractionCreate(config))
 
 	slog.Info("opening discord session")
 	err = discord.Open()
