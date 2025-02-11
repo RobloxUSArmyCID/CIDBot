@@ -4,6 +4,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/adrg/xdg"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,21 +15,30 @@ type Config struct {
 	WhitelistPath string `yaml:"whitelist_path"`
 }
 
-var configPath = flag.String("config-path", "./config.yml", "The path to a file containing the bot's configuration")
+var configPath = flag.String("config-path", "", "The path to a file containing the bot's configuration. Defaults to $XDG_CONFIG_HOME/CIDBot/config.yml")
 
-var Configuration *Config
-
-func Parse() (err error) {
+func Parse() (*Config, error) {
 	flag.Parse()
+
+	if *configPath == "" {
+		cfgPath, err := xdg.ConfigFile("CIDBot/config.yml")
+		if err != nil {
+			return nil, err
+		}
+
+		*configPath = cfgPath
+	}
 
 	fileContents, err := os.ReadFile(*configPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = yaml.Unmarshal(fileContents, &Configuration)
+	var config Config
+	err = yaml.Unmarshal(fileContents, &config)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return &config, err
 }

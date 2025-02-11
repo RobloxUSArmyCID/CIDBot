@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
-	"github.com/RobloxUSArmyCID/CIDBot/roblox"
+	"github.com/RobloxUSArmyCID/CIDBot/config"
 	"github.com/bwmarrin/discordgo"
-	"golang.org/x/time/rate"
 )
 
 type CommandOptions map[string]*discordgo.ApplicationCommandInteractionDataOption
@@ -86,30 +84,12 @@ func ParseOptions(opts []*discordgo.ApplicationCommandInteractionDataOption) Com
 	return co
 }
 
-var (
-	groups    []*roblox.Group
-	badges    []*roblox.Badge
-	friends   []*roblox.User
-	user      *roblox.User
-	thumbnail *string
-
-	mu sync.Mutex
-)
-
-var limiter = rate.NewLimiter(10, 1)
-
-const (
-	USAR_GROUP_ID           = 3108077
-	USAR_E1_RANK            = 5
-	THIRTY_REQUIRED_MEMBERS = 30
-)
-
 // error constants
 var (
 	errUnauthorized = errors.New("you are unauthorized to run this command")
 )
 
-func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
+func Executed(discord *discordgo.Session, interaction *discordgo.Interaction, config *config.Config) {
 	command := interaction.ApplicationCommandData()
 	options := ParseOptions(command.Options)
 
@@ -127,9 +107,9 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction) {
 
 	switch command.Name {
 	case "bgcheck":
-		backgroundCheckCommand(discord, interaction, options)
+		backgroundCheckCommand(discord, interaction, options, config)
 	case "whitelist":
-		whitelist(discord, interaction)
+		whitelist(discord, interaction, config)
 	default:
 		slog.Warn("incorrect command used", "command", command.Name, "id", interaction.ID)
 	}
