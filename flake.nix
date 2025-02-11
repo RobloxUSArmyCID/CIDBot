@@ -50,7 +50,7 @@
 
         config = lib.mkIf cfg.enable {
           home.packages = [cfg.package];
-          home.file.${cfg.configPath}.source = yaml.lib.toYaml cfg.extraConfig;
+          home.file.${cfg.configPath}.source = yaml.lib.${pkgs.system}.toYaml cfg.extraConfig;
           systemd.user.services.cidbot = {
             Unit = {
               Description = "The CID Bot";
