@@ -47,7 +47,7 @@
             description = "Configuration to put in the config.yml file. Takes prescedence over configFile.";
           };
           configFile = lib.mkOption {
-            type = lib.types.path;
+            type = lib.types.either lib.types.str lib.types.path;
             default = "";
             description = "Configuration to put in the config.yml file in the form of YAML file.";
           };
