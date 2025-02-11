@@ -38,6 +38,11 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 
 	user, err := roblox.NewUser(username)
 
+	if err != nil {
+		interactionFailed(discord, interaction, "", err)
+		return
+	}
+
 	var descriptionBuilder strings.Builder
 	failedBackgroundCheck := false
 
