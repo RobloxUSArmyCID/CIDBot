@@ -6,6 +6,7 @@ require (
 	github.com/adrg/strutil v0.3.1
 	github.com/adrg/xdg v0.5.3
 	github.com/bwmarrin/discordgo v0.28.2-0.20241208071600-33ffff21d31a
+	golang.org/x/sync v0.11.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

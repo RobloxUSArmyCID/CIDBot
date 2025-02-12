@@ -1,11 +1,13 @@
 package roblox
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/RobloxUSArmyCID/CIDBot/requests"
+	"golang.org/x/sync/errgroup"
 )
 
 type User struct {
@@ -40,8 +42,9 @@ type GetUsersByIDRequest struct {
 }
 
 func NewUser(username string) (*User, error) {
-	var wg sync.WaitGroup
-	errChan := make(chan error, 1)
+
+	ctx := context.Background()
+	eg, ctx := errgroup.WithContext(ctx)
 
 	u := &User{
 		Name: username,
@@ -54,10 +57,7 @@ func NewUser(username string) (*User, error) {
 
 	u.ID = userID
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
+	eg.Go(func() error {
 		const (
 			UsarGroupID = 3108077
 			RankE1      = 5
@@ -65,7 +65,7 @@ func NewUser(username string) (*User, error) {
 
 		groups, err := GetUserGroups(u.ID)
 		if err != nil {
-			errChan <- err
+			return err
 		}
 
 		var isE1, isInUsar bool
@@ -89,39 +89,36 @@ func NewUser(username string) (*User, error) {
 		u.IsInUsar = isInUsar
 		u.UsarRank = usarRank
 		u.SuspiciousGroups = susGroups
-	}()
+		return nil
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		created, err := GetUserCreationDate(u.ID)
 		if err != nil {
-			errChan <- err
+			return err
 		}
 		u.mu.Lock()
 		defer u.mu.Unlock()
 		u.Created = created
 		u.DaysFromCreation = int(time.Since(u.Created).Hours() / 24)
-	}()
+		return nil
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		badges, err := GetUserBadges(u.ID)
 		if err != nil {
-			errChan <- err
+			return err
 		}
 		u.mu.Lock()
 		defer u.mu.Unlock()
 		u.Badges = badges
-	}()
+		return nil
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		friends, err := GetUserFriends(u.ID)
 		if err != nil {
-			errChan <- err
+			return err
 		}
 
 		susFriends := GetSuspiciousFriends(u, u.Friends)
@@ -137,28 +134,22 @@ func NewUser(username string) (*User, error) {
 		u.Friends = friends
 		u.SuspiciousFriends = susFriends
 		u.UsernamesOfSuspiciousFriends = usernamesOfSusFriends
-	}()
+		return nil
+	})
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	eg.Go(func() error {
 		thumbnailURL, err := GetUserThumbnail(u.ID)
 		if err != nil {
-			errChan <- err
+			return err
 		}
 		u.mu.Lock()
 		defer u.mu.Unlock()
 		u.ThumbnailURL = *thumbnailURL
-	}()
+		return nil
+	})
 
-	err = <-errChan
-	if err != nil {
-		return nil, err
-	}
-
-	wg.Wait()
-	close(errChan)
-	return u, nil
+	err = eg.Wait()
+	return u, err
 }
 
 func getUserIDByUsername(username string) (uint64, error) {
