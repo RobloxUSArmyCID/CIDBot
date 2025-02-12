@@ -37,6 +37,11 @@ func (b *Builder) SetDescription(description string) *Builder {
 	return b
 }
 
+func (b *Builder) SetDiffDescription(description string) *Builder {
+	b.SetCodeBlockDescription(fmt.Sprintf("diff\n%s", description))
+	return b
+}
+
 func (b *Builder) SetCodeBlockDescription(description string) *Builder {
 	b.Description = fmt.Sprintf("```%s```", description)
 	return b
@@ -120,6 +125,11 @@ func (b *Builder) AddField(name, value string, inline bool) *Builder {
 		Value:  value,
 		Inline: inline,
 	})
+	return b
+}
+
+func (b *Builder) AddDiffField(name, value string, inline bool) *Builder {
+	b.AddCodeBlockField(name, fmt.Sprintf("diff\n%s", value), inline)
 	return b
 }
 

@@ -110,11 +110,12 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		SetColor(embeds.ColorGopherBlue).
 		SetCurrentTimestamp().
 		SetTitle(":white_check_mark: | Background check finished!").
-		SetCodeBlockDescription(description).
+		SetDiffDescription(description).
+		SetThumbnail(user.ThumbnailURL).
 		SetURL(profileURL).
 		AddCodeBlockField("Username:", user.Name, true).
 		AddCodeBlockField("ID:", fmt.Sprintf("%d", user.ID), true).
-		AddCodeBlockField("Failed:", failed, true).
+		AddDiffField("Failed:", failed, true).
 		AddCodeBlockField("USAR Rank:", user.UsarRank, true).
 		AddCodeBlockField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
 		Build()
