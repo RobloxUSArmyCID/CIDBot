@@ -50,7 +50,7 @@ func NewUser(username string) (*User, error) {
 		Name: username,
 	}
 
-	userID, err := getUserIDByUsername(u.Name)
+	username, userID, err := getUserNameAndIDByName(u.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func NewUser(username string) (*User, error) {
 			RankE1      = 5
 		)
 
-		groups, err := GetUserGroups(u.ID)
+		groups, err := getUserGroups(u.ID)
 		if err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ func NewUser(username string) (*User, error) {
 			}
 		}
 
-		susGroups := GetSuspiciousGroups(groups)
+		susGroups := getSuspiciousGroups(groups)
 
 		u.mu.Lock()
 		defer u.mu.Unlock()
@@ -93,7 +93,7 @@ func NewUser(username string) (*User, error) {
 	})
 
 	eg.Go(func() error {
-		created, err := GetUserCreationDate(u.ID)
+		created, err := getUserCreationDate(u.ID)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func NewUser(username string) (*User, error) {
 	})
 
 	eg.Go(func() error {
-		badges, err := GetUserBadges(u.ID)
+		badges, err := getUserBadges(u.ID)
 		if err != nil {
 			return err
 		}
@@ -116,12 +116,12 @@ func NewUser(username string) (*User, error) {
 	})
 
 	eg.Go(func() error {
-		friends, err := GetUserFriends(u.ID)
+		friends, err := getUserFriends(u.ID)
 		if err != nil {
 			return err
 		}
 
-		susFriends := GetSuspiciousFriends(u, u.Friends)
+		susFriends := getSuspiciousFriends(u, u.Friends)
 
 		var usernamesOfSusFriends []string
 		for _, susFriend := range susFriends {
@@ -138,7 +138,7 @@ func NewUser(username string) (*User, error) {
 	})
 
 	eg.Go(func() error {
-		thumbnailURL, err := GetUserThumbnail(u.ID)
+		thumbnailURL, err := getUserThumbnail(u.ID)
 		if err != nil {
 			return err
 		}
@@ -152,12 +152,12 @@ func NewUser(username string) (*User, error) {
 	return u, err
 }
 
-func getUserIDByUsername(username string) (uint64, error) {
-	users, err := GetUsersByUsernames([]string{username})
-	return users[0].ID, err
+func getUserNameAndIDByName(username string) (string, uint64, error) {
+	users, err := getUsersByNames([]string{username})
+	return users[0].Name, users[0].ID, err
 }
 
-func GetUsersByUsernames(names []string) ([]*User, error) {
+func getUsersByNames(names []string) ([]*User, error) {
 	requestUrl := "https://users.roblox.com/v1/usernames/users"
 
 	requestData := GetUsersByUsernameRequest{
@@ -173,7 +173,7 @@ func GetUsersByUsernames(names []string) ([]*User, error) {
 	return response.Data, err
 }
 
-func GetUsersByID(ids []uint64) ([]*User, error) {
+func getUsersByIDs(ids []uint64) ([]*User, error) {
 	requestUrl := "https://users.roblox.com/v1/users"
 
 	requestData := GetUsersByIDRequest{
@@ -189,13 +189,13 @@ func GetUsersByID(ids []uint64) ([]*User, error) {
 	return response.Data, err
 }
 
-func GetUserByID(id uint64) (*User, error) {
+func getUserByID(id uint64) (*User, error) {
 	requestUrl := fmt.Sprintf("https://users.roblox.com/v1/users/%d", id)
 	return requests.Get[User](requestUrl)
 }
 
-func GetUserCreationDate(id uint64) (time.Time, error) {
-	user, err := GetUserByID(id)
+func getUserCreationDate(id uint64) (time.Time, error) {
+	user, err := getUserByID(id)
 	if err != nil {
 		return time.Time{}, err
 	}

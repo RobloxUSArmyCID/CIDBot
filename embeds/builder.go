@@ -1,6 +1,7 @@
 package embeds
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -33,6 +34,11 @@ func (b *Builder) SetTitle(title string) *Builder {
 
 func (b *Builder) SetDescription(description string) *Builder {
 	b.Description = description
+	return b
+}
+
+func (b *Builder) SetCodeBlockDescription(description string) *Builder {
+	b.Description = fmt.Sprintf("```%s```", description)
 	return b
 }
 
@@ -117,7 +123,11 @@ func (b *Builder) AddField(name, value string, inline bool) *Builder {
 	return b
 }
 
+func (b *Builder) AddCodeBlockField(name, value string, inline bool) *Builder {
+	b.AddField(name, fmt.Sprintf("```%s```", value), inline)
+	return b
+}
+
 func (b *Builder) Build() *discordgo.MessageEmbed {
 	return &b.MessageEmbed
 }
-

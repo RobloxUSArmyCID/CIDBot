@@ -110,13 +110,13 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		SetColor(embeds.ColorGopherBlue).
 		SetCurrentTimestamp().
 		SetTitle(":white_check_mark: | Background check finished!").
-		SetDescription(description).
+		SetCodeBlockDescription(description).
 		SetURL(profileURL).
-		AddField("Username:", user.Name, true).
-		AddField("ID:", fmt.Sprintf("%d", user.ID), true).
-		AddField("Failed:", failed, true).
-		AddField("USAR Rank:", user.UsarRank, true).
-		AddField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
+		AddCodeBlockField("Username:", user.Name, true).
+		AddCodeBlockField("ID:", fmt.Sprintf("%d", user.ID), true).
+		AddCodeBlockField("Failed:", failed, true).
+		AddCodeBlockField("USAR Rank:", user.UsarRank, true).
+		AddCodeBlockField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
 		Build()
 
 	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{

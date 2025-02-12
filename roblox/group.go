@@ -25,7 +25,7 @@ type role struct {
 	Rank uint   `json:"rank"`
 }
 
-func GetUserGroups(userID uint64) ([]*Group, error) {
+func getUserGroups(userID uint64) ([]*Group, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v2/users/%d/groups/roles", userID)
 	response, err := requests.Get[requests.ResponseData[*Group]](requestUrl)
 	if err != nil {
@@ -35,10 +35,10 @@ func GetUserGroups(userID uint64) ([]*Group, error) {
 }
 
 func (g *Group) IsSuspicious() bool {
-	return slices.Contains(GetSuspiciousGroups([]*Group{g}), g)
+	return slices.Contains(getSuspiciousGroups([]*Group{g}), g)
 }
 
-func GetSuspiciousGroups(groups []*Group) []*Group {
+func getSuspiciousGroups(groups []*Group) []*Group {
 	keywords := []string{
 		"syndicate",
 		"group",

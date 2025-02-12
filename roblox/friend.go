@@ -8,7 +8,7 @@ import (
 	"github.com/adrg/strutil/metrics"
 )
 
-func GetUserFriends(userID uint64) ([]*User, error) {
+func getUserFriends(userID uint64) ([]*User, error) {
 	requestUrl := fmt.Sprintf("https://friends.roblox.com/v1/users/%d/friends", userID)
 	response, err := requests.Get[requests.ResponseData[*User]](requestUrl)
 	if err != nil {
@@ -17,7 +17,7 @@ func GetUserFriends(userID uint64) ([]*User, error) {
 	return response.Data, nil
 }
 
-func GetSuspiciousFriends(user *User, friends []*User) (susFriends []*User) {
+func getSuspiciousFriends(user *User, friends []*User) (susFriends []*User) {
 	jarowinkler := metrics.NewJaroWinkler()
 	jarowinkler.CaseSensitive = false
 
