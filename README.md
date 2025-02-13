@@ -26,7 +26,7 @@ You can use the Home Manager Module in your flake:
     outputs = { nixpkgs,  cidbot, ...}: let
         username = "user";
         system = "x86_64-linux" # confirmed - it works on aarch64-linux, not sure about darwin, it _should_ tho
-        pkgs = import nixpkgs { inherit system ;};
+        pkgs = import nixpkgs { inherit system; };
     in
     {
         homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
@@ -74,18 +74,9 @@ An example configuration of a module would be:
 
 The **only** supported building environment is Linux. It _should_ work on macOS, but I don't guarantee anything. If you're on Windows, use WSL.
 
-- Testing:
-
 ```bash
 cd <PATH_TO_SOURCE>
-nix build # make clean build to clean out the bin/ folder beforehand
-```
-
-- Release:
-
-```bash
-cd <PATH_TO_SOURCE>
-nix CIDBOT_VERSION=<VERSION> clean release # do not use v for the version (ex. v2.0.0)
+nix build
 ```
 
 _Made with :heart:,
