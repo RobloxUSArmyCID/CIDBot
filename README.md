@@ -6,6 +6,13 @@ The United States Army Criminal Investigation Division's background checking bot
 
 # Usage instructions
 
+Dependencies: 
+- a linux distro with systemd (or macOS, but I haven't checked; WSL 100% works)
+- Nix (with flakes and nix-command)
+- home-manager
+- Git
+- An SSH key associated with your GitHub account and your server's account (to login to GitHub through Git)
+
 The bot exposes a package and a Home Manager Module.
 You can use the Home Manager Module in your flake:
 
@@ -23,13 +30,13 @@ You can use the Home Manager Module in your flake:
         };
     };
 
-    outputs = { nixpkgs,  cidbot, ...}: let
+    outputs = { nixpkgs, home-manager, cidbot, ... }: let
         username = "user";
-        system = "x86_64-linux" # confirmed - it works on aarch64-linux, not sure about darwin, it _should_ tho
+        system = "x86_64-linux"; # confirmed - it works on aarch64-linux, not sure about darwin, it _should_ tho
         pkgs = import nixpkgs { inherit system; };
     in
     {
-        homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
+        homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             modules = [
                 cidbot.homeManagerModules.default
