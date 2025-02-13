@@ -109,12 +109,15 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 
 	tenthOfAMilisecond := 100 * time.Microsecond
 
-	infoEmbed := embeds.NewBuilder().
+	embed := embeds.NewBuilder().
 		SetAuthorUser(invoker).
 		SetColor(embeds.ColorGopherBlue).
+		SetCurrentTimestamp().
 		SetTitle(":white_check_mark: | Background check finished!").
+		SetDiffDescription(description).
 		SetThumbnail(user.ThumbnailURL).
 		SetURL(profileURL).
+		SetFooter(fmt.Sprintf("Executed in %s", time.Since(start).Round(tenthOfAMilisecond).String()), "").
 		AddCodeBlockField("Username:", user.Name, true).
 		AddCodeBlockField("ID:", fmt.Sprintf("%d", user.ID), true).
 		AddDiffField("Failed:", failed, true).
@@ -122,17 +125,9 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		AddCodeBlockField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
 		Build()
 
-	descEmbed := embeds.NewBuilder().
-		SetColor(embeds.ColorGopherBlue).
-		SetCurrentTimestamp().
-		SetDiffDescription(description).
-		SetFooter(fmt.Sprintf("Executed in %s", time.Since(start).Round(tenthOfAMilisecond).String()), "").
-		Build()
-
 	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
-			infoEmbed,
-			descEmbed,
+			embed,
 		},
 	})
 }
