@@ -47,8 +47,7 @@ func NewUser(username string) (*User, error) {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	u := &User{
-		Name:     username,
-		UsarRank: "N/A",
+		Name: username,
 	}
 
 	username, userID, err := getUserNameAndIDByName(u.Name)
@@ -79,6 +78,10 @@ func NewUser(username string) (*User, error) {
 				usarRank = group.Role.Name
 				isE1 = group.Role.Rank == RankE1
 			}
+		}
+
+		if !isInUsar {
+			usarRank = "N/A"
 		}
 
 		susGroups := getSuspiciousGroups(groups)
