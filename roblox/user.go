@@ -47,7 +47,8 @@ func NewUser(username string) (*User, error) {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	u := &User{
-		Name: username,
+		Name:     username,
+		UsarRank: "N/A",
 	}
 
 	username, userID, err := getUserNameAndIDByName(u.Name)
@@ -56,6 +57,7 @@ func NewUser(username string) (*User, error) {
 	}
 
 	u.ID = userID
+	u.Name = username
 
 	eg.Go(func() error {
 		const (
@@ -120,10 +122,9 @@ func NewUser(username string) (*User, error) {
 		if err != nil {
 			return err
 		}
+		susFriends := getSuspiciousFriends(u.Name, friends)
 
-		susFriends := getSuspiciousFriends(u, u.Friends)
-
-		var usernamesOfSusFriends []string
+		usernamesOfSusFriends := []string{}
 		for _, susFriend := range susFriends {
 			usernamesOfSusFriends = append(usernamesOfSusFriends, susFriend.Name)
 		}

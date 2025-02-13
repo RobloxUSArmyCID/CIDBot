@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/RobloxUSArmyCID/CIDBot/config"
 	"github.com/RobloxUSArmyCID/CIDBot/embeds"
@@ -13,6 +14,7 @@ import (
 )
 
 func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.Interaction, options CommandOptions, config *config.Config) {
+	start := time.Now()
 	slog.Debug("opening whitelist file")
 	whitelistBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
@@ -124,5 +126,6 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		Embeds: []*discordgo.MessageEmbed{
 			embed,
 		},
+		Content: time.Since(start).String(),
 	})
 }

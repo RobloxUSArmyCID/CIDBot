@@ -17,15 +17,18 @@ func getUserFriends(userID uint64) ([]*User, error) {
 	return response.Data, nil
 }
 
-func getSuspiciousFriends(user *User, friends []*User) (susFriends []*User) {
+func getSuspiciousFriends(username string, friends []*User) []*User {
 	jarowinkler := metrics.NewJaroWinkler()
 	jarowinkler.CaseSensitive = false
 
+	susFriends := []*User{}
+
 	for _, friend := range friends {
-		similarity := strutil.Similarity(friend.Name, user.Name, jarowinkler)
+		similarity := strutil.Similarity(friend.Name, username, jarowinkler)
 		if similarity >= 0.72 {
 			susFriends = append(susFriends, friend)
 		}
 	}
+
 	return susFriends
 }
