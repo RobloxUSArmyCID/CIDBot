@@ -107,6 +107,8 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 
 	profileURL := fmt.Sprintf("https://www.roblox.com/users/%d/profile", user.ID)
 
+	tenthOfAMilisecond := 100 * time.Microsecond
+
 	embed := embeds.NewBuilder().
 		SetAuthorUser(invoker).
 		SetColor(embeds.ColorGopherBlue).
@@ -115,6 +117,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		SetDiffDescription(description).
 		SetThumbnail(user.ThumbnailURL).
 		SetURL(profileURL).
+		SetFooter(fmt.Sprintf("Executed in %s", time.Since(start).Round(tenthOfAMilisecond).String()), "").
 		AddCodeBlockField("Username:", user.Name, true).
 		AddCodeBlockField("ID:", fmt.Sprintf("%d", user.ID), true).
 		AddDiffField("Failed:", failed, true).
@@ -126,6 +129,5 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		Embeds: []*discordgo.MessageEmbed{
 			embed,
 		},
-		Content: time.Since(start).String(),
 	})
 }
