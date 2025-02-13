@@ -4,54 +4,90 @@ The United States Army Criminal Investigation Division's background checking bot
 
 #### This bot is now hosted 24/7, and will be as long as I remain in CID.
 
-# Download instructions
-1. Go to https://github.com/RobloxUSArmyCID/CIDBot/releases/latest
-2. Download the file appropriate for your Operating System and architecture
+# Usage instructions
 
-# Running instructions
-1. On Windows (Powershell):
-```powershell
-cd <PATH_TO_CIDBOT_FOLDER>
-.\CIDBot-vX.X.X-windows-arch.exe --config-path <PATH_TO_CONFIG>
-```
-> You may have to wait a little on the first run for your antivirus to scan the file.
-> You may also have to approve the file through Windows SmartScreen by pressing more details, then "Run anyway".
-2. On other platforms:
-```bash
-cd <PATH_TO_CIDBOT_FOLDER>
-chmod +x CIDBot-vX.X.X-os-arch
-./CIDBot-vX.X.X-os-arch --config-path <PATH_TO_CONFIG>
-```
-> On macOS, you may have to open privacy & security settings and approve the file there.
+The bot exposes a package and a Home Manager Module.
+You can use the Home Manager Module in your flake:
 
-# Closing the bot - instructions
-- Press Ctrl/Cmd+C
-- Or close the terminal/PowerShell window.
+```nix
+{
+    inputs = {
+        nixpkgs.url = "nixpkgs/nixos-unstable";
+        home-manager = {
+            url = "github:nix-community/home-manager";
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
+        cidbot = {
+            url = "git+ssh://git@github.com/RobloxUSArmyCID/CIDBot"
+            inputs.nixpkgs.follows = "nixpkgs";
+        };
+    };
+
+    outputs = { nixpkgs,  cidbot, ...}: let
+        username = "user";
+        system = "x86_64-linux" # confirmed - it works on aarch64-linux, not sure about darwin, it _should_ tho
+        pkgs = import nixpkgs { inherit system ;};
+    in
+    {
+        homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            modules = [
+                cidbot.homeManagerModules.default
+                # your modules
+            ];
+        };
+    };
+}
+```
+
+An example configuration of a module would be:
+
+```nix
+{...}: {
+    services.cidbot = {
+        enable = true;
+        extraConfig = {
+            token = "INSERT TOKEN HERE";
+            is_development = true;
+            admin_server_id = "ADMIN SERVER ID";
+            whitelist_path = "PATH/TO/WHITELIST";
+        };
+    };
+}
+```
 
 # FAQ
-* Is it any good?
-  * [Yes.](https://news.ycombinator.com/item?id=3067434)
+
+- Is it any good?
+  - [Yes.](https://news.ycombinator.com/item?id=3067434)
 
 # Changing the token - instructions for CID HICOM
+
 1. Go to https://discord.com/developers/applications
 2. Select the CID Bot.
 3. Click on Bot.
 4. Click on Reset Token.
 5. Put in your Discord 2FA.
+6. Change the token in the configuration.
 
 # Building instructions
-The **only** supported building environment is Linux. It *should* work on macOS, but I don't guarantee anything. If you're on Windows, use WSL. The Go compiler can cross compile for Windows from Linux, and it does so upon using the `make release` command.
+
+The **only** supported building environment is Linux. It _should_ work on macOS, but I don't guarantee anything. If you're on Windows, use WSL.
+
 - Testing:
+
 ```bash
 cd <PATH_TO_SOURCE>
-make build # make clean build to clean out the bin/ folder beforehand
-```
-- Release:
-```bash
-cd <PATH_TO_SOURCE>
-make CIDBOT_VERSION=<VERSION> clean release # do not use v for the version (ex. v2.0.0)
+nix build # make clean build to clean out the bin/ folder beforehand
 ```
 
-*Made with :heart:,
+- Release:
+
+```bash
+cd <PATH_TO_SOURCE>
+nix CIDBOT_VERSION=<VERSION> clean release # do not use v for the version (ex. v2.0.0)
+```
+
+_Made with :heart:,
 in Poland,
-by f_o1oo.*
+by f_o1oo._
