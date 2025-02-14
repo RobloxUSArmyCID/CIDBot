@@ -42,7 +42,6 @@ type GetUsersByIDRequest struct {
 }
 
 func NewUser(username string) (*User, error) {
-
 	ctx := context.Background()
 	eg, ctx := errgroup.WithContext(ctx)
 
@@ -69,8 +68,9 @@ func NewUser(username string) (*User, error) {
 			return err
 		}
 
-		var isE1, isInUsar bool
-		var usarRank string
+		isE1 := false
+		isInUsar := false
+		usarRank := "N/A"
 
 		for _, group := range groups {
 			if group.Group.ID == UsarGroupID {
@@ -84,6 +84,8 @@ func NewUser(username string) (*User, error) {
 			usarRank = "N/A"
 		}
 
+		// O(n) with n-max = 100
+		// MaxO(100) -- not worth of optimization
 		susGroups := getSuspiciousGroups(groups)
 
 		u.mu.Lock()

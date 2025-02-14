@@ -52,14 +52,17 @@ func getSuspiciousGroups(groups []*Group) []*Group {
 		"royalty",
 		"force",
 		"company",
+		"intelligence",
+		"mi5",
+		"mi6",
+		"mic",
+		"intel",
 	}
 
 	susGroups := []*Group{}
 	for _, group := range groups {
-		if group.Group.MemberCount <= 30 {
-			susGroups = append(susGroups, group)
-		}
-		if slices.Contains(keywords, strings.ToLower(group.Group.Name)) {
+		if group.Group.MemberCount <= 30 ||
+			slices.Contains(keywords, strings.ToLower(group.Group.Name)) {
 			susGroups = append(susGroups, group)
 		}
 	}
