@@ -81,7 +81,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	}
 
 	for _, group := range user.SuspiciousGroups {
-		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspicious group: %s (%d members) ⚠\n", group.Group.Name, group.Group.MemberCount))
+		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Suspicious group: %s (%d members) - owned by %s ⚠\n", group.Group.Name, group.Group.MemberCount, group.Group.Owner.Name))
 	}
 
 	if len(user.SuspiciousFriends) > 0 {

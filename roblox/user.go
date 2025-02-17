@@ -11,13 +11,13 @@ import (
 )
 
 type User struct {
-	Name    string    `json:"name"`
-	ID      uint64    `json:"id"`
+	Name    string    `json:"name" json:"username"`
+	ID      uint64    `json:"id" json:"userId"`
 	Created time.Time `json:"created"`
 
 	DaysFromCreation             int
-	Groups                       []*Group
-	SuspiciousGroups             []*Group
+	Groups                       []*GroupAndRole
+	SuspiciousGroups             []*GroupAndRole
 	Badges                       []*Badge
 	Friends                      []*User
 	SuspiciousFriends            []*User

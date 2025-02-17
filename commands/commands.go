@@ -73,6 +73,9 @@ var AdminServerCommands = []*discordgo.ApplicationCommand{
 			},
 		},
 		DefaultMemberPermissions: &whitelistPermissions,
+		IntegrationTypes: &[]discordgo.ApplicationIntegrationType{
+			discordgo.ApplicationIntegrationGuildInstall,
+		},
 	},
 }
 

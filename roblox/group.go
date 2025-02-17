@@ -8,37 +8,38 @@ import (
 	"github.com/RobloxUSArmyCID/CIDBot/requests"
 )
 
-type Group struct {
-	Group internalGroup `json:"group"`
-	Role  role          `json:"role"`
+type GroupAndRole struct {
+	Group Group `json:"group"`
+	Role  Role  `json:"role"`
 }
 
-type internalGroup struct {
+type Group struct {
 	ID          uint64 `json:"id"`
 	Name        string `json:"name"`
 	MemberCount uint   `json:"memberCount"`
+	Owner       *User  `json:"owner"`
 }
 
-type role struct {
+type Role struct {
 	ID   uint64 `json:"id"`
 	Name string `json:"name"`
 	Rank uint   `json:"rank"`
 }
 
-func getUserGroups(userID uint64) ([]*Group, error) {
-	requestUrl := fmt.Sprintf("https://groups.roblox.com/v2/users/%d/groups/roles", userID)
-	response, err := requests.Get[requests.ResponseData[*Group]](requestUrl)
+func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
+	requestUrl := fmt.Sprintf("https://groups.roblox.com/v1/users/%d/groups/roles", userID)
+	response, err := requests.Get[requests.ResponseData[*GroupAndRole]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
 	return response.Data, nil
 }
 
-func (g *Group) IsSuspicious() bool {
-	return slices.Contains(getSuspiciousGroups([]*Group{g}), g)
+func (g *GroupAndRole) IsSuspicious() bool {
+	return slices.Contains(getSuspiciousGroups([]*GroupAndRole{g}), g)
 }
 
-func getSuspiciousGroups(groups []*Group) []*Group {
+func getSuspiciousGroups(groups []*GroupAndRole) []*GroupAndRole {
 	keywords := []string{
 		"syndicate",
 		"group",
@@ -59,7 +60,7 @@ func getSuspiciousGroups(groups []*Group) []*Group {
 		"intel",
 	}
 
-	susGroups := []*Group{}
+	susGroups := []*GroupAndRole{}
 	for _, group := range groups {
 		if group.Group.MemberCount <= 30 ||
 			slices.Contains(keywords, strings.ToLower(group.Group.Name)) {
