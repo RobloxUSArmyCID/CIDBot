@@ -31,20 +31,20 @@ func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction
 
 	user, err := discord.User(userID)
 	if err != nil {
-		interactionFailed(discord, interaction, "user doesn't exist or another error has occured", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
 	file, err := os.OpenFile(config.WhitelistPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 	defer file.Close()
 
 	_, err = file.Write(userIDBytes)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't write the user ID to the whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func whitelistAdd(discord *discordgo.Session, interaction *discordgo.Interaction
 func whitelistView(discord *discordgo.Session, interaction *discordgo.Interaction, config *config.Config) {
 	fileContentsBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
@@ -88,13 +88,13 @@ func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interact
 
 	user, err := discord.User(userID)
 	if err != nil {
-		interactionFailed(discord, interaction, "user doesn't exist or another error has occured", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
 	fileContentsBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't read whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
@@ -109,14 +109,14 @@ func whitelistRemove(discord *discordgo.Session, interaction *discordgo.Interact
 
 	file, err := os.OpenFile(config.WhitelistPath, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0644)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't open whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 	defer file.Close()
 
 	_, err = file.Write([]byte(newContents))
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't write to the whitelist file", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 

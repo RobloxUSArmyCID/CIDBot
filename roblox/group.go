@@ -14,10 +14,10 @@ type GroupAndRole struct {
 }
 
 type Group struct {
-	ID          uint64 `json:"id"`
-	Name        string `json:"name"`
-	MemberCount uint   `json:"memberCount"`
-	Owner       *User  `json:"owner"`
+	ID          uint64      `json:"id"`
+	Name        string      `json:"name"`
+	MemberCount uint        `json:"memberCount"`
+	Owner       *GroupOwner `json:"owner"`
 }
 
 type Role struct {
@@ -26,12 +26,18 @@ type Role struct {
 	Rank uint   `json:"rank"`
 }
 
+type GroupOwner struct {
+	Name string `json:"username"`
+	ID   uint64 `json:"userId"`
+}
+
 func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v1/users/%d/groups/roles", userID)
 	response, err := requests.Get[requests.ResponseData[*GroupAndRole]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
+
 	return response.Data, nil
 }
 
@@ -62,10 +68,16 @@ func getSuspiciousGroups(groups []*GroupAndRole) []*GroupAndRole {
 
 	susGroups := []*GroupAndRole{}
 	for _, group := range groups {
-		if group.Group.MemberCount <= 30 ||
-			slices.Contains(keywords, strings.ToLower(group.Group.Name)) {
+		if group.Group.MemberCount <= 30 && !slices.Contains(susGroups, group) {
 			susGroups = append(susGroups, group)
 		}
+
+		for _, keyword := range keywords {
+			if strings.Contains(strings.ToLower(group.Group.Name), keyword) && !slices.Contains(susGroups, group) {
+				susGroups = append(susGroups, group)
+			}
+		}
+
 	}
 
 	return susGroups

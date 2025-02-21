@@ -2,11 +2,10 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/RobloxUSArmyCID/CIDBot/config"
+	"github.com/RobloxUSArmyCID/CIDBot/embeds"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -118,29 +117,33 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction, co
 	}
 }
 
-func interactionFailed(discord *discordgo.Session, interaction *discordgo.Interaction, content string, err error) error {
-	slog.Warn("interaction failed", "id", interaction.ID, "guild", interaction.GuildID, "err", err)
-	embed := &discordgo.MessageEmbed{
-		Author: &discordgo.MessageEmbedAuthor{
-			Name:    interaction.Member.User.Username,
-			IconURL: interaction.Member.User.AvatarURL(""),
-		},
-		Title:       ":x: | An error occurred!",
-		Description: fmt.Sprintf("Error contents:\n```%s: %s```", content, err),
-		Timestamp:   time.Now().Format(time.RFC3339),
-		Color:       0x8b0000,
-		Footer: &discordgo.MessageEmbedFooter{
-			Text: "If you believe this is an error, contact the Investigatory Director.",
-		},
+func getCommandInvoker(interaction *discordgo.Interaction) *discordgo.User {
+	if interaction.User != nil {
+		return interaction.User
 	}
 
-	_, err = discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
+	return interaction.Member.User
+}
+
+func interactionFailed(discord *discordgo.Session, interaction *discordgo.Interaction, err error) {
+	slog.Warn("interaction failed", "id", interaction.ID, "guild", interaction.GuildID, "err", err)
+
+	invoker := getCommandInvoker(interaction)
+
+	embed := embeds.NewBuilder().
+		SetAuthorUser(invoker).
+		SetColor(embeds.ColorError).
+		SetCurrentTimestamp().
+		SetTitle(":x: | An error occured!").
+		SetCodeBlockDescription(err.Error()).
+		SetFooter("If you believe this is an error, contact the Investigatory Director.", "").
+		Build()
+
+	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
 		Embeds: []*discordgo.MessageEmbed{
 			embed,
 		},
 	})
-
-	return err
 
 }
 

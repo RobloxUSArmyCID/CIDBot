@@ -18,7 +18,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	slog.Debug("opening whitelist file")
 	whitelistBytes, err := os.ReadFile(config.WhitelistPath)
 	if err != nil {
-		interactionFailed(discord, interaction, "couldn't open the whitelist file", errUnauthorized)
+		interactionFailed(discord, interaction, errUnauthorized)
 		return
 	}
 
@@ -32,7 +32,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	slog.Debug("checking if invoker is whitelisted", "id", invoker.ID)
 	whitelist := string(whitelistBytes)
 	if !strings.Contains(whitelist, invoker.ID) {
-		interactionFailed(discord, interaction, "You are not allowed to run this command", errUnauthorized)
+		interactionFailed(discord, interaction, errUnauthorized)
 		return
 	}
 
@@ -41,7 +41,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	user, err := roblox.NewUser(username)
 
 	if err != nil {
-		interactionFailed(discord, interaction, "", err)
+		interactionFailed(discord, interaction, err)
 		return
 	}
 
