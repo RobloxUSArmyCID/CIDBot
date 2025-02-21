@@ -22,12 +22,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		return
 	}
 
-	var invoker *discordgo.User
-	if interaction.Member.User == nil {
-		invoker = interaction.User
-	} else {
-		invoker = interaction.Member.User
-	}
+	invoker := getCommandInvoker(interaction)
 
 	slog.Debug("checking if invoker is whitelisted", "id", invoker.ID)
 	whitelist := string(whitelistBytes)
