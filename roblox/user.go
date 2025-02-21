@@ -154,12 +154,18 @@ func NewUser(username string) (*User, error) {
 		return nil
 	})
 
-	err = eg.Wait()
-	return u, err
+	if err = eg.Wait(); err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }
 
 func getUserNameAndIDByName(username string) (string, uint64, error) {
 	users, err := getUsersByNames([]string{username})
+	if len(users) != 1 {
+		return "", 0, fmt.Errorf("no such user exists: %s", username)
+	}
 	return users[0].Name, users[0].ID, err
 }
 
