@@ -69,7 +69,6 @@
 
             Service = {
               ExecStart = "${cfg.package}/bin/cidbot --config-path ${cfg.configPath}";
-              Restart = "always";
             };
 
             Install = {
