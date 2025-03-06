@@ -80,10 +80,6 @@ func NewUser(username string) (*User, error) {
 			}
 		}
 
-		if !isInUsar {
-			usarRank = "N/A"
-		}
-
 		// O(n) with n-max = 100
 		// MaxO(100) -- not worth of optimization
 		susGroups := getSuspiciousGroups(groups)
