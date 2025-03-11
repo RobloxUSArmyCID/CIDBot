@@ -31,6 +31,44 @@ type GroupOwner struct {
 	ID   uint64 `json:"userId"`
 }
 
+func (u *User) GetGroups() error {
+	const (
+		UsarGroupID = 3108077
+		RankE1      = 5
+	)
+
+	groups, err := getUserGroups(u.ID)
+	if err != nil {
+		return err
+	}
+
+	isE1 := false
+	isInUsar := false
+	usarRank := "N/A"
+
+	for _, group := range groups {
+		if group.Group.ID == UsarGroupID {
+			isInUsar = true
+			usarRank = group.Role.Name
+			isE1 = group.Role.Rank == RankE1
+		}
+	}
+
+	// O(n) with n-max = 100
+	// MaxO(100) -- not worth of optimization
+	susGroups := getSuspiciousGroups(groups)
+
+	u.mu.Lock()
+	defer u.mu.Unlock()
+
+	u.Groups = groups
+	u.IsE1 = isE1
+	u.IsInUsar = isInUsar
+	u.UsarRank = usarRank
+	u.SuspiciousGroups = susGroups
+	return nil
+}
+
 func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v1/users/%d/groups/roles", userID)
 	response, err := requests.Get[requests.ResponseData[*GroupAndRole]](requestUrl)

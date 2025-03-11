@@ -43,6 +43,7 @@ type GetUsersByIDRequest struct {
 
 func NewUser(username string) (*User, error) {
 	ctx := context.Background()
+	// automatically adds a WithCancelCause trait to the context
 	eg, ctx := errgroup.WithContext(ctx)
 
 	u := &User{
@@ -57,98 +58,11 @@ func NewUser(username string) (*User, error) {
 	u.ID = userID
 	u.Name = username
 
-	eg.Go(func() error {
-		const (
-			UsarGroupID = 3108077
-			RankE1      = 5
-		)
-
-		groups, err := getUserGroups(u.ID)
-		if err != nil {
-			return err
-		}
-
-		isE1 := false
-		isInUsar := false
-		usarRank := "N/A"
-
-		for _, group := range groups {
-			if group.Group.ID == UsarGroupID {
-				isInUsar = true
-				usarRank = group.Role.Name
-				isE1 = group.Role.Rank == RankE1
-			}
-		}
-
-		// O(n) with n-max = 100
-		// MaxO(100) -- not worth of optimization
-		susGroups := getSuspiciousGroups(groups)
-
-		u.mu.Lock()
-		defer u.mu.Unlock()
-
-		u.Groups = groups
-		u.IsE1 = isE1
-		u.IsInUsar = isInUsar
-		u.UsarRank = usarRank
-		u.SuspiciousGroups = susGroups
-		return nil
-	})
-
-	eg.Go(func() error {
-		created, err := getUserCreationDate(u.ID)
-		if err != nil {
-			return err
-		}
-		u.mu.Lock()
-		defer u.mu.Unlock()
-		u.Created = created
-		u.DaysFromCreation = int(time.Since(u.Created).Hours() / 24)
-		return nil
-	})
-
-	eg.Go(func() error {
-		badges, err := getUserBadges(u.ID)
-		if err != nil {
-			return err
-		}
-		u.mu.Lock()
-		defer u.mu.Unlock()
-		u.Badges = badges
-		return nil
-	})
-
-	eg.Go(func() error {
-		friends, err := getUserFriends(u.ID)
-		if err != nil {
-			return err
-		}
-		susFriends := getSuspiciousFriends(u.Name, friends)
-
-		usernamesOfSusFriends := []string{}
-		for _, susFriend := range susFriends {
-			usernamesOfSusFriends = append(usernamesOfSusFriends, susFriend.Name)
-		}
-
-		u.mu.Lock()
-		defer u.mu.Unlock()
-
-		u.Friends = friends
-		u.SuspiciousFriends = susFriends
-		u.UsernamesOfSuspiciousFriends = usernamesOfSusFriends
-		return nil
-	})
-
-	eg.Go(func() error {
-		thumbnailURL, err := getUserThumbnail(u.ID)
-		if err != nil {
-			return err
-		}
-		u.mu.Lock()
-		defer u.mu.Unlock()
-		u.ThumbnailURL = *thumbnailURL
-		return nil
-	})
+	eg.Go(u.GetGroups)
+	eg.Go(u.GetFriends)
+	eg.Go(u.GetBadges)
+	eg.Go(u.GetThumbnail)
+	eg.Go(u.GetCreationTime)
 
 	if err = eg.Wait(); err != nil {
 		return nil, err
@@ -209,4 +123,17 @@ func getUserCreationDate(id uint64) (time.Time, error) {
 	}
 
 	return user.Created, nil
+}
+
+func (u *User) GetCreationTime() error {
+	created, err := getUserCreationDate(u.ID)
+	if err != nil {
+		return err
+	}
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	u.Created = created
+	u.DaysFromCreation = int(time.Since(u.Created).Hours() / 24)
+	return nil
+
 }

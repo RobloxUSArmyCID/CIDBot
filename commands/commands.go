@@ -136,7 +136,7 @@ func interactionFailed(discord *discordgo.Session, interaction *discordgo.Intera
 		SetCurrentTimestamp().
 		SetTitle(":x: | An error occured!").
 		SetCodeBlockDescription(err.Error()).
-		SetFooter("If you believe this is an error, contact the Investigatory Director.", "").
+		SetFooter("If you believe this is a bug, contact f_o1oo or the CID ID.", "").
 		Build()
 
 	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{
