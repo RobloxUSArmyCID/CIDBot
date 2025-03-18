@@ -10,7 +10,7 @@ type CanViewInventory struct {
 	CanView bool `json:"canView"`
 }
 
-func (u *User) GetInventoryPublicity() error {
+func (u *User) GetInventoryVisibility() error {
 	requestUrl := fmt.Sprintf("https://inventory.roblox.com/v1/users/%d/can-view-inventory", u.ID)
 	response, err := requests.Get[CanViewInventory](requestUrl)
 	if err != nil {
