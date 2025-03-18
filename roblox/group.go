@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/RobloxUSArmyCID/CIDBot/requests"
+	"github.com/RobloxUSArmyCID/CIDBot/roblox/usar"
 )
 
 type GroupAndRole struct {
@@ -54,9 +55,8 @@ func (u *User) GetGroups() error {
 		}
 	}
 
-	// O(n) with n-max = 100
-	// MaxO(100) -- not worth of optimization
-	susGroups := getSuspiciousGroups(groups)
+	u.getSuspiciousGroups()
+	u.getUsarUnits()
 
 	u.mu.Lock()
 	defer u.mu.Unlock()
@@ -65,7 +65,6 @@ func (u *User) GetGroups() error {
 	u.IsE1 = isE1
 	u.IsInUsar = isInUsar
 	u.UsarRank = usarRank
-	u.SuspiciousGroups = susGroups
 	return nil
 }
 
@@ -79,11 +78,7 @@ func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
 	return response.Data, nil
 }
 
-func (g *GroupAndRole) IsSuspicious() bool {
-	return slices.Contains(getSuspiciousGroups([]*GroupAndRole{g}), g)
-}
-
-func getSuspiciousGroups(groups []*GroupAndRole) []*GroupAndRole {
+func (u *User) getSuspiciousGroups() {
 	keywords := []string{
 		"syndicate",
 		"group",
@@ -105,18 +100,40 @@ func getSuspiciousGroups(groups []*GroupAndRole) []*GroupAndRole {
 	}
 
 	susGroups := []*GroupAndRole{}
-	for _, group := range groups {
-		if group.Group.MemberCount <= 30 && !slices.Contains(susGroups, group) {
+	for _, group := range u.Groups {
+		groupNotAlreadyInList := !slices.Contains(susGroups, group)
+		groupBelow30Members := group.Group.MemberCount <= 30
+		groupBelow10KMembers := group.Group.MemberCount < 10_000
+		_, groupIsAUsarGroup := usar.Groups[group.Group.ID]
+
+		if groupBelow30Members && groupNotAlreadyInList && !groupIsAUsarGroup {
 			susGroups = append(susGroups, group)
 		}
 
 		for _, keyword := range keywords {
-			if strings.Contains(strings.ToLower(group.Group.Name), keyword) && !slices.Contains(susGroups, group) {
+			groupHasKeyword := strings.Contains(strings.ToLower(group.Group.Name), keyword)
+
+			if groupHasKeyword && groupNotAlreadyInList && groupBelow10KMembers && !groupIsAUsarGroup {
 				susGroups = append(susGroups, group)
 			}
 		}
 
 	}
 
-	return susGroups
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	u.SuspiciousGroups = susGroups
+}
+
+func (u *User) getUsarUnits() {
+	units := []string{}
+	for _, group := range u.Groups {
+		if unit, ok := usar.Groups[group.Group.ID]; ok {
+			units = append(units, unit)
+		}
+	}
+
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	u.UsarUnits = units
 }

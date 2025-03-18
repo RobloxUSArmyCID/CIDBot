@@ -48,6 +48,13 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		failedBackgroundCheck = true
 	}
 
+	units := ""
+	if len(user.UsarUnits) > 0 {
+		units = strings.Join(user.UsarUnits, ", ")
+	} else {
+		units = "N/A"
+	}
+
 	if user.IsE1 {
 		descriptionBuilder.WriteString("- ⚠ E1 ⚠\n")
 		failedBackgroundCheck = true
@@ -118,6 +125,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		AddDiffField("Failed:", failed, true).
 		AddCodeBlockField("USAR Rank:", user.UsarRank, true).
 		AddCodeBlockField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
+		AddCodeBlockField("USAR Units:", units, true).
 		Build()
 
 	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{

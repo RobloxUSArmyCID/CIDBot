@@ -18,6 +18,7 @@ type User struct {
 	DaysFromCreation             int
 	Groups                       []*GroupAndRole
 	SuspiciousGroups             []*GroupAndRole
+	UsarUnits                    []string
 	Badges                       []*Badge
 	Friends                      []*User
 	SuspiciousFriends            []*User
