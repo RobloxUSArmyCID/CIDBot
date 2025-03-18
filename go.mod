@@ -1,6 +1,6 @@
 module github.com/RobloxUSArmyCID/CIDBot
 
-go 1.23.3
+go 1.24.1
 
 require (
 	github.com/adrg/strutil v0.3.1
