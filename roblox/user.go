@@ -16,8 +16,8 @@ type User struct {
 	Created time.Time `json:"created"`
 
 	DaysFromCreation             int
-	Groups                       []*GroupAndRole
-	SuspiciousGroups             []*GroupAndRole
+	Groups                       []GroupAndRole
+	SuspiciousGroups             []GroupAndRole
 	UsarUnits                    []string
 	Badges                       []*Badge
 	Friends                      []*User

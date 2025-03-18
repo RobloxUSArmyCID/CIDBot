@@ -55,22 +55,21 @@ func (u *User) GetGroups() error {
 		}
 	}
 
-	u.getSuspiciousGroups()
-	u.getUsarUnits()
-
 	u.mu.Lock()
 	defer u.mu.Unlock()
 
 	u.Groups = groups
+	u.GetSuspiciousGroups()
+	u.GetUsarUnits()
 	u.IsE1 = isE1
 	u.IsInUsar = isInUsar
 	u.UsarRank = usarRank
 	return nil
 }
 
-func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
+func getUserGroups(userID uint64) ([]GroupAndRole, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v1/users/%d/groups/roles", userID)
-	response, err := requests.Get[requests.ResponseData[*GroupAndRole]](requestUrl)
+	response, err := requests.Get[requests.ResponseData[GroupAndRole]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +77,7 @@ func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
 	return response.Data, nil
 }
 
-func (u *User) getSuspiciousGroups() {
+func (u *User) GetSuspiciousGroups() {
 	keywords := []string{
 		"syndicate",
 		"group",
@@ -99,7 +98,7 @@ func (u *User) getSuspiciousGroups() {
 		"intel",
 	}
 
-	susGroups := []*GroupAndRole{}
+	susGroups := []GroupAndRole{}
 	for _, group := range u.Groups {
 		groupNotAlreadyInList := !slices.Contains(susGroups, group)
 		groupBelow30Members := group.Group.MemberCount <= 30
@@ -125,7 +124,7 @@ func (u *User) getSuspiciousGroups() {
 	u.SuspiciousGroups = susGroups
 }
 
-func (u *User) getUsarUnits() {
+func (u *User) GetUsarUnits() {
 	units := []string{}
 	for _, group := range u.Groups {
 		if unit, ok := usar.Groups[group.Group.ID]; ok {
