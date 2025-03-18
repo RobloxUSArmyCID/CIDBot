@@ -113,6 +113,7 @@ func (u *User) GetSuspiciousGroups() {
 		}
 
 		for _, keyword := range keywords {
+			groupNotAlreadyInList = !slices.Contains(susGroups, group)
 			groupHasKeyword := strings.Contains(strings.ToLower(group.Group.Name), keyword)
 
 			if groupHasKeyword && groupNotAlreadyInList && groupBelow10KMembers && !groupIsAUsarGroup {
