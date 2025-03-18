@@ -84,7 +84,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	}
 
 	if len(user.Groups) <= 15 {
-		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ In 15 or less groups (%d) ⚠\n", len(user.Friends)))
+		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ In 15 or less groups (%d) ⚠\n", len(user.Groups)))
 	}
 
 	for _, group := range user.SuspiciousGroups {
