@@ -56,11 +56,14 @@ func (u *User) GetGroups() error {
 	}
 
 	u.mu.Lock()
-	defer u.mu.Unlock()
-
 	u.Groups = groups
+	u.mu.Unlock()
+
 	u.GetSuspiciousGroups()
 	u.GetUsarUnits()
+
+	u.mu.Lock()
+	defer u.mu.Unlock()
 	u.IsE1 = isE1
 	u.IsInUsar = isInUsar
 	u.UsarRank = usarRank
