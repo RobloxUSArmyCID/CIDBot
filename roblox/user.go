@@ -15,6 +15,7 @@ type User struct {
 	ID      uint64    `json:"id"`
 	Created time.Time `json:"created"`
 
+	CanViewInventory             bool
 	DaysFromCreation             int
 	Groups                       []*GroupAndRole
 	SuspiciousGroups             []*GroupAndRole
@@ -64,6 +65,7 @@ func NewUser(username string) (*User, error) {
 	eg.Go(u.GetBadges)
 	eg.Go(u.GetThumbnail)
 	eg.Go(u.GetCreationTime)
+	eg.Go(u.GetInventoryPublicity)
 
 	if err = eg.Wait(); err != nil {
 		return nil, err

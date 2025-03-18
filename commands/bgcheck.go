@@ -55,12 +55,17 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		units = "N/A"
 	}
 
+	if !user.CanViewInventory {
+		descriptionBuilder.WriteString("- ⚠ Private inventory! Contact to make public. ⚠")
+		failedBackgroundCheck = true
+	}
+
 	if user.IsE1 {
 		descriptionBuilder.WriteString("- ⚠ E1 ⚠\n")
 		failedBackgroundCheck = true
 	}
 
-	if len(user.Badges) < 100 {
+	if len(user.Badges) < 100 && user.CanViewInventory {
 		descriptionBuilder.WriteString(fmt.Sprintf("- ⚠ Less than 100 badges (%d) ⚠\n", len(user.Badges)))
 		failedBackgroundCheck = true
 	}
