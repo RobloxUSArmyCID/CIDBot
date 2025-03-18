@@ -70,9 +70,9 @@ func (u *User) GetGroups() error {
 	return nil
 }
 
-func getUserGroups(userID uint64) ([]GroupAndRole, error) {
+func getUserGroups(userID uint64) ([]*GroupAndRole, error) {
 	requestUrl := fmt.Sprintf("https://groups.roblox.com/v1/users/%d/groups/roles", userID)
-	response, err := requests.Get[requests.ResponseData[GroupAndRole]](requestUrl)
+	response, err := requests.Get[requests.ResponseData[*GroupAndRole]](requestUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (u *User) GetSuspiciousGroups() {
 		"intel",
 	}
 
-	susGroups := []GroupAndRole{}
+	susGroups := []*GroupAndRole{}
 	for _, group := range u.Groups {
 		groupNotAlreadyInList := !slices.Contains(susGroups, group)
 		groupBelow30Members := group.Group.MemberCount <= 30
@@ -128,8 +128,22 @@ func (u *User) GetSuspiciousGroups() {
 }
 
 func (u *User) GetUsarUnits() {
+	const (
+		UsarGroupID = 3108077
+		QmcGroupID  = 5040124
+		TqmRank     = 10
+	)
 	units := []string{}
+
 	for _, group := range u.Groups {
+		if group.Group.ID == QmcGroupID && group.Role.Rank < TqmRank {
+			continue
+		}
+
+		if group.Group.ID == UsarGroupID {
+			continue
+		}
+
 		if unit, ok := usar.Groups[group.Group.ID]; ok {
 			units = append(units, unit)
 		}

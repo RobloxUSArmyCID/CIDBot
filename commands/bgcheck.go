@@ -125,7 +125,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 		AddDiffField("Failed:", failed, true).
 		AddCodeBlockField("USAR Rank:", user.UsarRank, true).
 		AddCodeBlockField("Account age:", fmt.Sprintf("%d days old", user.DaysFromCreation), true).
-		AddCodeBlockField("USAR Units:", units, true).
+		AddCodeBlockField("USAR Units:", units, false).
 		Build()
 
 	discord.FollowupMessageCreate(interaction, true, &discordgo.WebhookParams{

@@ -1,7 +1,7 @@
 package roblox_test
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/RobloxUSArmyCID/CIDBot/roblox"
@@ -9,7 +9,7 @@ import (
 
 func TestGroupWithKeywordAndManyMembers(t *testing.T) {
 	user := &roblox.User{
-		Groups: []roblox.GroupAndRole{
+		Groups: []*roblox.GroupAndRole{
 			{
 				Group: roblox.Group{ // pass
 					Name:        "The Killing Force", // keyword
@@ -19,11 +19,11 @@ func TestGroupWithKeywordAndManyMembers(t *testing.T) {
 		},
 	}
 
-	want := []roblox.GroupAndRole{}
+	want := []*roblox.GroupAndRole{}
 
 	user.GetSuspiciousGroups()
 
-	if !reflect.DeepEqual(user.SuspiciousGroups, want) {
+	if !slices.Equal(user.SuspiciousGroups, want) {
 		t.Error(`Group "The Killing Force" with 10M members was tagged as suspicious.`)
 	}
 
@@ -31,7 +31,7 @@ func TestGroupWithKeywordAndManyMembers(t *testing.T) {
 
 func TestGroupWithKeywordAndLittleMembers(t *testing.T) {
 	user := &roblox.User{
-		Groups: []roblox.GroupAndRole{
+		Groups: []*roblox.GroupAndRole{
 			{
 				Group: roblox.Group{ // fail
 					Name:        "The Killing Force", // keyword
@@ -41,7 +41,7 @@ func TestGroupWithKeywordAndLittleMembers(t *testing.T) {
 		},
 	}
 
-	want := []roblox.GroupAndRole{
+	want := []*roblox.GroupAndRole{
 		{
 			Group: roblox.Group{ // fail
 				Name:        "The Killing Force", // keyword
@@ -52,7 +52,7 @@ func TestGroupWithKeywordAndLittleMembers(t *testing.T) {
 
 	user.GetSuspiciousGroups()
 
-	if !reflect.DeepEqual(user.SuspiciousGroups, want) {
+	if !slices.Equal(user.SuspiciousGroups, want) {
 		t.Error(`Group "The Killing Force" with 100 members was not tagged as suspicious.`)
 	}
 
@@ -60,7 +60,7 @@ func TestGroupWithKeywordAndLittleMembers(t *testing.T) {
 
 func TestUSARGroupWithKeyword(t *testing.T) {
 	user := &roblox.User{
-		Groups: []roblox.GroupAndRole{
+		Groups: []*roblox.GroupAndRole{
 			{
 				Group: roblox.Group{ // pass
 					Name:        "Forces Command", // keyword
@@ -71,11 +71,11 @@ func TestUSARGroupWithKeyword(t *testing.T) {
 		},
 	}
 
-	want := []roblox.GroupAndRole{}
+	want := []*roblox.GroupAndRole{}
 
 	user.GetSuspiciousGroups()
 
-	if !reflect.DeepEqual(user.SuspiciousGroups, want) {
+	if !slices.Equal(user.SuspiciousGroups, want) {
 		t.Error(`USAR Group "Forces Command" with 100 members was tagged as suspicious.`)
 	}
 }
