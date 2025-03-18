@@ -56,7 +56,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	}
 
 	if !user.CanViewInventory {
-		descriptionBuilder.WriteString("- ⚠ Private inventory! Contact to make public. ⚠")
+		descriptionBuilder.WriteString("- ⚠ Private inventory! Contact to make public. ⚠\n")
 		failedBackgroundCheck = true
 	}
 
