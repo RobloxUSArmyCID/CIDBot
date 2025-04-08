@@ -65,6 +65,7 @@ func NewUser(username string) (*User, error) {
 	eg.Go(u.GetBadges)
 	eg.Go(u.GetThumbnail)
 	eg.Go(u.GetCreationTime)
+	eg.Go(u.GetInventoryVisibility)
 
 	if err = eg.Wait(); err != nil {
 		return nil, err
