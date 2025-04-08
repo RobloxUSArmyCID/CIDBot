@@ -27,6 +27,11 @@ var Commands = []*discordgo.ApplicationCommand{
 			discordgo.ApplicationIntegrationUserInstall,
 			discordgo.ApplicationIntegrationGuildInstall,
 		},
+		Contexts: &[]discordgo.InteractionContextType{
+			discordgo.InteractionContextBotDM,
+			discordgo.InteractionContextGuild,
+			discordgo.InteractionContextPrivateChannel,
+		},
 	},
 }
 
