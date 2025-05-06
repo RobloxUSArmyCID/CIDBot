@@ -27,6 +27,11 @@ var Commands = []*discordgo.ApplicationCommand{
 			discordgo.ApplicationIntegrationUserInstall,
 			discordgo.ApplicationIntegrationGuildInstall,
 		},
+		Contexts: &[]discordgo.InteractionContextType{
+			discordgo.InteractionContextBotDM,
+			discordgo.InteractionContextGuild,
+			discordgo.InteractionContextPrivateChannel,
+		},
 	},
 }
 
@@ -98,7 +103,7 @@ func Executed(discord *discordgo.Session, interaction *discordgo.Interaction, co
 	slog.Info("command executed",
 		"command", command.Name,
 		"id", interaction.ID,
-		"user", interaction.Member.User.ID,
+		"user", getCommandInvoker(interaction).ID,
 		"guild", interaction.GuildID)
 
 	err := deferInteraction(discord, interaction)
