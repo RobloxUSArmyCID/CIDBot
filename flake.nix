@@ -92,7 +92,7 @@
           runHook postBuild
         '';
 
-        vendorHash = "sha256-jQ/OoLciPd4KvRf4AErxENPQvjNNl/4tq9ZxLohVtas=";
+        vendorHash = "sha256-E+TSgsKcIdd746VvlKAht3oZPdWerPNvMs/nG9g+El4=";
 
         installPhase = ''
           runHook preInstall
