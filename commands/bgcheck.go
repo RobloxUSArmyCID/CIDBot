@@ -43,7 +43,7 @@ func backgroundCheckCommand(discord *discordgo.Session, interaction *discordgo.I
 	var descriptionBuilder strings.Builder
 	failedBackgroundCheck := false
 
-	if user.Name == "SoftieSharkie" {
+	if user.Name == "SoftieSharkie" || user.Name == "IWillBeNeverAlbert" {
 		descriptionBuilder.WriteString("- Idiot\n")
 		failedBackgroundCheck = true
 	}
